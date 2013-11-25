@@ -9,11 +9,17 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.EventListener;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -24,6 +30,8 @@ import javax.swing.SwingUtilities;
 public class Canvas extends JPanel {
     // image where the user's drawing is stored
     private Image drawingBuffer;
+    private EventListener currentListener;
+    private float strokeWidth = 10;
     
     
     /**
@@ -33,10 +41,31 @@ public class Canvas extends JPanel {
      */
     public Canvas(int width, int height) {
         this.setPreferredSize(new Dimension(width, height));
-        addDrawingController();
+        addMenu();
+        addDrawingController(new DrawingController());
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
+    }
+    
+    private void addMenu() {
+    	JMenuBar menu = new JMenuBar();
+        JMenu drawing = new JMenu("Drawing");
+        JMenuItem drawMenuItem = new JMenuItem("Draw");
+        drawMenuItem.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDrawingController(new DrawingController());
+            }});
+        JMenuItem eraseMenuItem = new JMenuItem("Erase");
+        eraseMenuItem.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDrawingController(new EraserController());
+            }});
+        
+        drawing.add(drawMenuItem);
+        drawing.add(eraseMenuItem);
+        menu.add(drawing);
+        this.add("Menu", menu);
     }
     
     /**
@@ -114,10 +143,11 @@ public class Canvas extends JPanel {
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    private void drawLineSegment(int x1, int y1, int x2, int y2) {
+    private void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         
-        g.setColor(Color.BLACK);
+        g.setColor(color);
+        g.setStroke(new BasicStroke(width));
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -128,10 +158,14 @@ public class Canvas extends JPanel {
     /*
      * Add the mouse listener that supports the user's freehand drawing.
      */
-    private void addDrawingController() {
-        DrawingController controller = new DrawingController();
-        addMouseListener(controller);
-        addMouseMotionListener(controller);
+    private void addDrawingController(EventListener listener) {
+        if (currentListener != null) {
+        	removeMouseListener((MouseListener) currentListener);
+        	removeMouseMotionListener((MouseMotionListener) currentListener);
+        }
+    	currentListener = listener;
+        addMouseListener((MouseListener) currentListener);
+        addMouseMotionListener((MouseMotionListener) currentListener);
     }
     
     /*
@@ -157,7 +191,43 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y);
+            drawLineSegment(lastX, lastY, x, y, Color.BLACK, strokeWidth);
+            lastX = x;
+            lastY = y;
+        }
+
+        // Ignore all these other mouse events.
+        public void mouseMoved(MouseEvent e) { }
+        public void mouseClicked(MouseEvent e) { }
+        public void mouseReleased(MouseEvent e) { }
+        public void mouseEntered(MouseEvent e) { }
+        public void mouseExited(MouseEvent e) { }
+    }
+    
+    /*
+     * EraserController handles the user's freehand drawing.
+     */
+    private class EraserController implements MouseListener, MouseMotionListener {
+        // store the coordinates of the last mouse event, so we can
+        // draw a line segment from that last point to the point of the next mouse event.
+        private int lastX, lastY; 
+
+        /*
+         * When mouse button is pressed down, start drawing.
+         */
+        public void mousePressed(MouseEvent e) {
+            lastX = e.getX();
+            lastY = e.getY();
+        }
+
+        /*
+         * When mouse moves while a button is pressed down,
+         * draw a line segment.
+         */
+        public void mouseDragged(MouseEvent e) {
+            int x = e.getX();
+            int y = e.getY();
+            drawLineSegment(lastX, lastY, x, y, Color.WHITE, strokeWidth);
             lastX = x;
             lastY = y;
         }
