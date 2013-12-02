@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -14,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Arrays;
 import java.util.EventListener;
 
 import javax.swing.JFrame;
@@ -23,13 +26,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
 public class Canvas extends JPanel {
     // image where the user's drawing is stored
-    private Image drawingBuffer;
+    private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private float strokeWidth = 10;
     
@@ -46,6 +50,24 @@ public class Canvas extends JPanel {
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
+    }
+    
+    public int[][] getPixelArray() {
+        int width = getWidth();
+        int height = getHeight();
+        Raster raster = drawingBuffer.getData();
+        int[][] pixelArray = new int[width][height];
+        for (int w=0; w<width; w++) {
+            for (int h=0; h<height; h++) {
+                pixelArray[w][h] = raster.getSample(w,h,0);
+            }
+        }
+        
+        return pixelArray;
+    }
+    
+    public int[][] calculateChanges(int[][] original) {
+        return null;
     }
     
     private void addMenu() {
@@ -87,9 +109,10 @@ public class Canvas extends JPanel {
      * Make the drawing buffer and draw some starting content for it.
      */
     private void makeDrawingBuffer() {
-        drawingBuffer = createImage(getWidth(), getHeight());
+        drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         fillWithWhite();
         drawSmile();
+        getPixelArray();
     }
     
     /*
