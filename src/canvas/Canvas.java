@@ -32,6 +32,7 @@ public class Canvas extends JPanel {
     private Image drawingBuffer;
     private EventListener currentListener;
     private float strokeWidth = 10;
+    private float eraserWidth = 30;
     
     
     /**
@@ -227,7 +228,7 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.WHITE, strokeWidth);
+            drawLineSegment(lastX, lastY, x, y, Color.WHITE, eraserWidth);
             lastX = x;
             lastY = y;
         }
