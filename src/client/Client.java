@@ -1,10 +1,12 @@
 package client;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.net.Socket;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import Command.Command;
 
@@ -12,21 +14,35 @@ public class Client {
     
     //the username the client will go by in this session
     //must be unique; no other clients can have this username
-    private String username;
+    private final String username;
     //the same of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
     private Canvas canvas;
     //the GUI for this client
-    private JFrame frame;
+    private final JFrame frame;
     //the color the user is currently drawing in
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
-    private float currentWidth;
+    private float currentWidth = 10;
     //the socket with which the user connects to the client
-    private Socket socket;
+    private final Socket socket;
     //the list of boards the user has to choose from
     private String[] boards;
+    
+    public Client(String username, String currentBoardName, Socket socket) {
+        this.username = username;
+        this.currentBoardName = currentBoardName;
+        this.socket = socket;
+        this.boards = new String[0];
+        frame = new JFrame("Freehand Canvas");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        canvas = new Canvas(800, 600, this);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.pack();
+        frame.setVisible(true);
+    }
     
     /**
      * Switches the current board to the board with the given name
@@ -123,8 +139,20 @@ public class Client {
      * Sets the newColor, probably based off of a color picker selection on the canvas
      * @param newWidth: the new color of the stroke
      */
-    public void setCurrentColorh(Color newColor) {
+    public void setCurrentColor(Color newColor) {
         currentColor = newColor;
+    }
+    
+    /*
+     * Main program. Make a window containing a Canvas.
+     */
+    public static void main(String[] args) {
+        // set up the UI (on the event-handling thread)
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Client client = new Client("Jessica", "Jessica's board", new Socket());
+            }
+        });
     }
 
 }

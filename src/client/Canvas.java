@@ -39,10 +39,14 @@ public class Canvas extends JPanel {
      * @param width width in pixels
      * @param height height in pixels
      */
-    public Canvas(int width, int height) {
+    public Canvas(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
+        this.users = new String[0];
+        System.out.println(client);
+        this.client = client;
         addMenuBar();
         addDrawingController(new DrawingController());
+        
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
@@ -95,7 +99,7 @@ public class Canvas extends JPanel {
             }
 
             public void actionPerformed(ActionEvent e) {
-                client.setCurrentColorh(newColor);
+                client.setCurrentColor(newColor);
             }
         }
         
@@ -128,6 +132,7 @@ public class Canvas extends JPanel {
                 
             }
         }
+        System.out.println(client);
         JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 50, (int)Math.round(client.getCurrentWidth()));
 
         slider.addChangeListener(new SliderChangeListener());
@@ -140,6 +145,7 @@ public class Canvas extends JPanel {
         
         this.add("Menu", menuBar);
         this.add(slider);
+        
     }
     
     /**
@@ -314,22 +320,4 @@ public class Canvas extends JPanel {
         public void mouseExited(MouseEvent e) { }
     }
     
-    
-    /*
-     * Main program. Make a window containing a Canvas.
-     */
-    public static void main(String[] args) {
-        // set up the UI (on the event-handling thread)
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame window = new JFrame("Freehand Canvas");
-                window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                window.setLayout(new BorderLayout());
-                Canvas canvas = new Canvas(800, 600);
-                window.add(canvas, BorderLayout.CENTER);
-                window.pack();
-                window.setVisible(true);
-            }
-        });
-    }
 }
