@@ -16,12 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
@@ -34,6 +29,7 @@ public class Canvas extends JPanel {
     private float strokeWidth = 10;
     private float eraserWidth = 30;
     
+    private Color color = Color.BLACK;
     
     /**
      * Make a canvas.
@@ -42,16 +38,44 @@ public class Canvas extends JPanel {
      */
     public Canvas(int width, int height) {
         this.setPreferredSize(new Dimension(width, height));
-        addMenu();
+        addMenuBar();
         addDrawingController(new DrawingController());
+        //setLayout();
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
     }
     
-    private void addMenu() {
-    	JMenuBar menu = new JMenuBar();
-        JMenu drawing = new JMenu("Drawing");
+    private void setLayout() {
+     // set the layout of the GUI using GroupLayout
+        GroupLayout layout = new GroupLayout(getRootPane());
+        getRootPane().setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        //Vertical Layout
+        layout.setVerticalGroup(layout
+                .createSequentialGroup()
+                .addGroup(
+                        layout.createParallelGroup(
+                                GroupLayout.Alignment.BASELINE)
+                                .addComponent(inputStroke))
+                .addComponent(this));
+        
+        //Horizontal Layout
+        layout.setHorizontalGroup(layout
+                .createParallelGroup()
+                .addGroup(
+                        layout.createSequentialGroup()
+                                .addComponent(inputStroke))
+                .addComponent(this));
+    }
+    
+    private void addMenuBar() {
+    	JMenuBar menuBar = new JMenuBar();
+    	
+    	//add First Menu = Mode
+        JMenu mode = new JMenu("Mode");
         JMenuItem drawMenuItem = new JMenuItem("Draw");
         drawMenuItem.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -63,10 +87,63 @@ public class Canvas extends JPanel {
                 addDrawingController(new EraserController());
             }});
         
-        drawing.add(drawMenuItem);
-        drawing.add(eraseMenuItem);
-        menu.add(drawing);
-        this.add("Menu", menu);
+        menuBar.add(mode);
+        mode.add(drawMenuItem);
+        mode.addSeparator();
+        mode.add(eraseMenuItem);
+        
+        //add Second Menu = Users
+        JMenu users = new JMenu("Users");
+        menuBar.add(users);
+        //List of Users
+        String[] listUsers = {"James", "Earl", "Jones"};
+        for (String user: listUsers) {
+            users.add(new JMenuItem(user));
+        }
+        
+        
+        //add List of Boards
+        JMenu boards = new JMenu("Board(s)");
+        menuBar.add(boards);
+        //List of Boards
+        String[] listBoards = {"Board 1", "Board 2", "Board 3"};
+        for (String board: listBoards) {
+            boards.add(new JMenuItem(board));
+        }
+        
+        class ColorActionListener implements ActionListener {
+            Color newColor;
+            public ColorActionListener(Color singleColor) {
+                newColor = singleColor;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                color = newColor;
+            }
+        }
+        
+        //add Colors
+        JMenu colors = new JMenu("Paint Color");
+        menuBar.add(colors);
+        Object[][] listColors = {{"Black", Color.BLACK},
+                                {"Blue", Color.BLUE},
+                                {"Cyan", Color.CYAN},
+                                {"Green", Color.GREEN},
+                                {"Orange", Color.ORANGE},
+                                {"Magenta", Color.MAGENTA},
+                                {"Yellow", Color.YELLOW}};
+        for (int i = 0; i<listColors.length; i++) {
+            String name = (String)listColors[i][0];
+            Color singlColor = (Color)listColors[i][1];
+            JMenuItem item = new JMenuItem(name);
+            item.addActionListener(new ColorActionListener(singlColor));
+            colors.add(item);
+        }
+        
+        
+        
+        
+        this.add("Menu", menuBar);
     }
     
     /**
@@ -192,7 +269,7 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.BLACK, strokeWidth);
+            drawLineSegment(lastX, lastY, x, y, color, strokeWidth);
             lastX = x;
             lastY = y;
         }
