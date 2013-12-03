@@ -17,6 +17,8 @@ import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
@@ -26,8 +28,7 @@ public class Canvas extends JPanel {
     // image where the user's drawing is stored
     private Image drawingBuffer;
     private EventListener currentListener;
-    private float strokeWidth = 10;
-    private float eraserWidth = 30;
+    private int strokeWidth = 10;
     
     private Color color = Color.BLACK;
     
@@ -140,10 +141,29 @@ public class Canvas extends JPanel {
             colors.add(item);
         }
         
-        
-        
+        class SliderChangeListener implements ChangeListener {
+
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                if (!source.getValueIsAdjusting()) {
+                    int weight = (int)source.getValue();
+                    strokeWidth = weight;
+                }
+                
+            }
+        }
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 50, strokeWidth);
+
+        slider.addChangeListener(new SliderChangeListener());
+        slider.setMajorTickSpacing(10);
+        slider.setMinorTickSpacing(2);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        slider.setSize(200, 200);
+        slider.setVisible(true);
         
         this.add("Menu", menuBar);
+        this.add(slider);
     }
     
     /**
@@ -305,7 +325,7 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.WHITE, eraserWidth);
+            drawLineSegment(lastX, lastY, x, y, Color.WHITE, strokeWidth);
             lastX = x;
             lastY = y;
         }
