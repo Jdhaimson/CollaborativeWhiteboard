@@ -110,5 +110,21 @@ public class Client {
     public float getCurrentWidth() {
         return currentWidth;
     }
+    
+    /**
+     * Sets the newWidth, probably based off of a slider movement on the canvas
+     * @param newWidth: the new width of the stroke
+     */
+    public void setCurrentWidth(float newWidth) {
+        currentWidth = newWidth;
+    }
+    
+    /**
+     * Sets the newColor, probably based off of a color picker selection on the canvas
+     * @param newWidth: the new color of the stroke
+     */
+    public void setCurrentColorh(Color newColor) {
+        currentColor = newColor;
+    }
 
 }
