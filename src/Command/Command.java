@@ -27,6 +27,7 @@ public class Command {
     /**
      * Determines whether the object is a Canvas or SimpleCanvas, then finds the method with a name matching the command name,
      * then invokes the method with the command's arguments
+     * Requires the object to be a Canvas or SimpleCanvas
      * @param canvas: the object that the method will be invoked on
      */
     public void invokeCommand(Object canvas) {

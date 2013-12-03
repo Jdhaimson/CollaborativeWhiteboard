@@ -65,7 +65,7 @@ public class Client {
     /**
      * Gets the users for the current board from the server and sets them
      */
-    public void updateUser() {
+    public void updateUsers() {
     }
     
     /**
@@ -73,6 +73,12 @@ public class Client {
      * @param users: the list of users to set for the canvas
      */
     public void setCanvasUsers(String[] users) {
+    }
+    
+    /**
+     * Gets all of the current boards from the server
+     */
+    public void updateBoards() {
     }
     
     /**

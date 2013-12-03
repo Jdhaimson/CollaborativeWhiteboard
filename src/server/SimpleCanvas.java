@@ -1,4 +1,4 @@
-package client;
+package server;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
