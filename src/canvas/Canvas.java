@@ -41,35 +41,9 @@ public class Canvas extends JPanel {
         this.setPreferredSize(new Dimension(width, height));
         addMenuBar();
         addDrawingController(new DrawingController());
-        //setLayout();
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
-    }
-    
-    private void setLayout() {
-     // set the layout of the GUI using GroupLayout
-        GroupLayout layout = new GroupLayout(getRootPane());
-        getRootPane().setLayout(layout);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-
-        //Vertical Layout
-        layout.setVerticalGroup(layout
-                .createSequentialGroup()
-                .addGroup(
-                        layout.createParallelGroup(
-                                GroupLayout.Alignment.BASELINE)
-                                .addComponent(inputStroke))
-                .addComponent(this));
-        
-        //Horizontal Layout
-        layout.setHorizontalGroup(layout
-                .createParallelGroup()
-                .addGroup(
-                        layout.createSequentialGroup()
-                                .addComponent(inputStroke))
-                .addComponent(this));
     }
     
     private void addMenuBar() {
