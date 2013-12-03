@@ -1,4 +1,4 @@
-package canvas;
+package client;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -6,7 +6,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.Point;
@@ -16,7 +15,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.Arrays;
 import java.util.EventListener;
 
 import javax.swing.JFrame;
@@ -35,8 +33,9 @@ public class Canvas extends JPanel {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
-    private float strokeWidth = 10;
-    private float eraserWidth = 30;
+    private String name;
+    private String[] users;
+    private Client client;
     
     
     /**
@@ -51,24 +50,6 @@ public class Canvas extends JPanel {
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
-    }
-    
-    public int[][] getPixelArray() {
-        int width = getWidth();
-        int height = getHeight();
-        Raster raster = drawingBuffer.getData();
-        int[][] pixelArray = new int[width][height];
-        for (int w=0; w<width; w++) {
-            for (int h=0; h<height; h++) {
-                pixelArray[w][h] = raster.getSample(w,h,0);
-            }
-        }
-        
-        return pixelArray;
-    }
-    
-    public int[][] calculateChanges(int[][] original) {
-        return null;
     }
     
     private void addMenu() {
@@ -113,7 +94,6 @@ public class Canvas extends JPanel {
         drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         fillWithWhite();
         drawSmile();
-        getPixelArray();
     }
     
     /*
@@ -215,7 +195,7 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.BLACK, strokeWidth);
+            drawLineSegment(lastX, lastY, x, y, client.getCurrentColor(), client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
@@ -251,7 +231,7 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.WHITE, eraserWidth);
+            drawLineSegment(lastX, lastY, x, y, Color.WHITE, client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
