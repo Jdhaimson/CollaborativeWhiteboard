@@ -24,12 +24,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import Command.Canvas;
+
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class SimpleCanvas {
+public class SimpleCanvas implements Canvas {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private String name;
@@ -70,7 +72,7 @@ public class SimpleCanvas {
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    private void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
+    public void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         
         g.setColor(color);

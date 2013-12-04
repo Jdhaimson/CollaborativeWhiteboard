@@ -14,13 +14,13 @@ public class Client {
     
     //the username the client will go by in this session
     //must be unique; no other clients can have this user name
-    private final String username;
+    private String username;
     //the name of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
-    private Canvas canvas;
+    private CanvasGUI canvas;
     //the GUI for this client
-    private final JFrame frame;
+    private JFrame frame;
     //the color the user is currently drawing in
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
@@ -30,15 +30,17 @@ public class Client {
     //the list of boards the user has to choose from
     private String[] boards;
     
-    public Client(String username, String currentBoardName, Socket socket) {
-        this.username = username;
-        this.currentBoardName = currentBoardName;
+    public Client(Socket socket) {
         this.socket = socket;
-        this.boards = new String[0];
+        updateBoards();
+        
+    }
+    
+    public void setupCanvas() {
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        canvas = new Canvas(800, 600, this);
+        canvas = new CanvasGUI(800, 600, this);
         frame.add(canvas, BorderLayout.CENTER);
         frame.pack();
         frame.setVisible(true);
@@ -82,6 +84,8 @@ public class Client {
      * Gets the users for the current board from the server and sets them
      */
     public void updateUsers() {
+        //TODO
+        canvas.setUsers(new String[] {"Jessica", "Juan", "Josh"});
     }
     
     /**
@@ -95,6 +99,8 @@ public class Client {
      * Gets all of the current boards from the server
      */
     public void updateBoards() {
+        //TODO
+        this.boards = new String[] {"Board 1", "Board 2", "Board 3"};
     }
     
     /**
@@ -143,6 +149,22 @@ public class Client {
         currentColor = newColor;
     }
     
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
+    public void setCurrentBoardName(String currentBoardName) {
+        this.currentBoardName = currentBoardName;
+    }
+    
+    public void setBoards(String[] boards) {
+        this.boards = boards;
+    }
+    
+    public String[] getBoards() {
+        return boards;
+    }
+    
     /*
      * Main program. Make a window containing a Canvas.
      */
@@ -150,7 +172,8 @@ public class Client {
         // set up the UI (on the event-handling thread)
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Client client = new Client("Jessica", "Jessica's board", new Socket());
+                Client client = new Client(new Socket());
+                client.setupCanvas();
             }
         });
     }

@@ -1,13 +1,12 @@
 package client;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -20,13 +19,17 @@ import java.util.EventListener;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
+import Command.Canvas;
 
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class Canvas extends JPanel {
+public class CanvasGUI extends JPanel implements Canvas {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
@@ -39,10 +42,9 @@ public class Canvas extends JPanel {
      * @param width width in pixels
      * @param height height in pixels
      */
-    public Canvas(int width, int height, Client client) {
+    public CanvasGUI(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
         this.users = new String[0];
-        System.out.println(client);
         this.client = client;
         addMenuBar();
         addDrawingController(new DrawingController(false));
@@ -50,6 +52,10 @@ public class Canvas extends JPanel {
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
+    }
+    
+    public void setUsers(String[] users) {
+        this.users = users;
     }
     
     private void addMenuBar() {
@@ -74,23 +80,64 @@ public class Canvas extends JPanel {
         mode.add(eraseMenuItem);
         
         //add Second Menu = Users
-        JMenu users = new JMenu("Users");
-        menuBar.add(users);
+        final JMenu usersMenu = new JMenu("Users");
+        menuBar.add(usersMenu);
         //List of Users
-        String[] listUsers = {"James", "Earl", "Jones"};
-        for (String user: listUsers) {
-            users.add(new JMenuItem(user));
+        for (String user: users) {
+            JLabel label = new JLabel(user);
+            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+            usersMenu.add(label);
         }
+        
+        usersMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuCanceled(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuSelected(MenuEvent arg0) {
+                client.updateUsers();
+                usersMenu.removeAll();
+                for (String user: users) {
+                    JLabel label = new JLabel(user);
+                    label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                    usersMenu.add(label);
+                }
+            }
+        });
         
         
         //add List of Boards
-        JMenu boards = new JMenu("Board(s)");
+        final JMenu boards = new JMenu("Board(s)");
         menuBar.add(boards);
         //List of Boards
-        String[] listBoards = {"Board 1", "Board 2", "Board 3"};
+        String[] listBoards = client.getBoards();
         for (String board: listBoards) {
             boards.add(new JMenuItem(board));
         }
+        
+        boards.addMenuListener(new MenuListener() {
+            @Override
+            public void menuCanceled(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuSelected(MenuEvent arg0) {
+                client.updateBoards();
+                boards.removeAll();
+                for (String board: client.getBoards()) {
+                    boards.add(new JMenuItem(board));
+                }
+            }
+        });
         
         class ColorActionListener implements ActionListener {
             Color newColor;
@@ -132,7 +179,6 @@ public class Canvas extends JPanel {
                 
             }
         }
-        System.out.println(client);
         JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 50, (int)Math.round(client.getCurrentWidth()));
 
         slider.addChangeListener(new SliderChangeListener());
@@ -189,7 +235,7 @@ public class Canvas extends JPanel {
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    private void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
+    public void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         
         g.setColor(color);
