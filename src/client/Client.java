@@ -4,10 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -21,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 
@@ -45,10 +50,14 @@ public class Client {
     private Socket socket;
     //the list of boards the user has to choose from
     private String[] boards;
+    private JDialog dialog;
+    private DefaultListModel<String> boardListModel;
+    private JTextField newBoard;
     
     public Client() {
+        updateBoards();
         
-        final JDialog dialog = new JDialog();
+        dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
         final Container dialogContainer = new Container();
         GroupLayout layout = new GroupLayout(dialogContainer);
@@ -64,13 +73,12 @@ public class Client {
         JLabel usernameLabel = new JLabel("Username:");
         hUsername.addComponent(usernameLabel).addComponent(username);
         
-        //TODO:get boards
-        final DefaultListModel<String> boardListModel = new DefaultListModel<String>();
-        String[] tempBoards = new String[]{"Board 1", "Board 2", "Board 3"};
+        boardListModel = new DefaultListModel<String>();
+        String[] tempBoards = boards;
         for (int i=0; i<tempBoards.length;i++) {
             boardListModel.addElement(tempBoards[i]);
         }
-        JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
+        final JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
         boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         boardList.setLayoutOrientation(JList.VERTICAL);
         boardList.setVisibleRowCount(-1);
@@ -79,7 +87,7 @@ public class Client {
         
         SequentialGroup hNewBoard = layout.createSequentialGroup();
         JLabel newBoardLabel = new JLabel("New Board:");
-        final JTextField newBoard = new JTextField(10);
+        newBoard = new JTextField(10);
         newBoard.setName("newBoard");
         JButton newBoardButton = new JButton("Add Board");
         hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
@@ -110,9 +118,13 @@ public class Client {
         
         startButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
-                if (createUser(username.getText())) {
+                if (username.getText().equals("")) {
+                    JOptionPane.showMessageDialog(dialog, "Please enter a username.", "Try again", JOptionPane.ERROR_MESSAGE);
+                } else if (boardList.isSelectionEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Please select a board.", "Try again", JOptionPane.ERROR_MESSAGE);
+                } else if (createUser(username.getText(), boardList.getSelectedValue())) {
                     dialog.setVisible(false);
-                    setupCanvas();
+                    setupCanvas(username.getText(), boardList.getSelectedValue());
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
                 }
@@ -121,14 +133,46 @@ public class Client {
         
         newBoardButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
-                if (newBoard(newBoard.getText())) {
-                    boardListModel.addElement(newBoard.getText());
+                NewBoardWorker worker = new NewBoardWorker(newBoard.getText());
+                worker.execute();
+                
+            }
+        });
+    }
+    
+    class NewBoardWorker extends SwingWorker<Boolean, Object> {
+        
+        private String newBoardName;
+        
+        public NewBoardWorker(String newBoardName) {
+            this.newBoardName = newBoardName;
+        }
+        
+        /**
+         * Called when execute is called on the worker
+         */
+        @Override
+        protected Boolean doInBackground() throws Exception {
+            return newBoard(newBoardName);
+        }   
+        
+        /**
+         * After doInBackground has gotten its result, display the result in the list (or not)
+         */
+        @Override
+        protected void done() {
+            try {
+                if (get()) {
+                    boardListModel.addElement(newBoardName);
                     newBoard.setText("");
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
                 }
+            } catch (HeadlessException | InterruptedException
+                    | ExecutionException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
     
     /**
@@ -136,12 +180,14 @@ public class Client {
      * @param username: the user's choice of username
      * @return: true if username creation is successful, false if not
      */
-    public boolean createUser(String username) {
+    public boolean createUser(String username, String boardName) {
+        //TODO
         return true;
     }
     
-    public void setupCanvas() {
-        updateBoards();
+    public void setupCanvas(String username, String boardName) {
+        this.username = username;
+        this.currentBoardName = boardName;
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -157,7 +203,8 @@ public class Client {
      * Updates the current users of the canvas
      * @param newBoardName: the name of the new board
      */
-    public void switchBoard(String newBoardName) {    
+    public void switchBoard(String newBoardName) {
+        //TODO
     }
     
     /**
@@ -165,7 +212,8 @@ public class Client {
      * @param newBoardName: the name to name the new board with
      * @return: true if the board creation is successful, false if not
      */
-    public boolean newBoard(String newBoardName) {  
+    public boolean newBoard(String newBoardName) { 
+        //TODO
         return true;
     }
     
@@ -183,6 +231,9 @@ public class Client {
      * @param command: the command to perform on the canvas
      */
     public void updateCanvasCommand(String boardName, Command command) {
+        if (command.checkBoardName(boardName)) {
+            command.invokeCommand(canvas);
+        }
     }
     
     /**

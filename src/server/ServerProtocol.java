@@ -2,16 +2,14 @@ package server;
 
 import java.net.Socket;
 
-public class ServerReceiveProtocol implements Runnable {
+public class ServerProtocol implements Runnable {
     
     private final Socket socket;
     private final Server server;
-    private final String username;
     
-    public ServerReceiveProtocol(Socket socket, Server server, String username) {
+    public ServerProtocol(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
-        this.username = username;
     }
     
     /**
@@ -29,7 +27,7 @@ public class ServerReceiveProtocol implements Runnable {
     }
     
     /**
-     * Calls server.newBoard
+     * Calls server.newBoard and returns the result to the client
      */
     public void newBoard() {
     }
@@ -47,9 +45,17 @@ public class ServerReceiveProtocol implements Runnable {
     }
     
     /**
-     * Calls server.enter
+     * Calls server.getBoards and returns the result to the client
      */
-    public void enter() {
+    public void getBoards() {
+        
+    }
+    
+    /**
+     * Calls server.checkUsers and returns the result to the client
+     */
+    public void checkUsers() {
+        
     }
 
 }
