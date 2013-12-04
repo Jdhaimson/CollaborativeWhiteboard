@@ -107,6 +107,7 @@ public class CanvasGUI extends JPanel implements Canvas {
                     label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
                     usersMenu.add(label);
                 }
+                repaint();
             }
         });
         
@@ -136,6 +137,7 @@ public class CanvasGUI extends JPanel implements Canvas {
                 for (String board: client.getBoards()) {
                     boards.add(new JMenuItem(board));
                 }
+                repaint();
             }
         });
         
