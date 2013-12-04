@@ -37,13 +37,7 @@ public class Client {
     }
     
     public void setupCanvas() {
-        frame = new JFrame("Freehand Canvas");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
         canvas = new CanvasGUI(800, 600, this);
-        frame.add(canvas, BorderLayout.CENTER);
-        frame.pack();
-        frame.setVisible(true);
     }
     
     /**

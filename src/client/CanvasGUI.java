@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -29,13 +30,15 @@ import Command.Canvas;
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class CanvasGUI extends JPanel implements Canvas {
+public class CanvasGUI extends JFrame implements Canvas {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private String name;
     private String[] users;
     private Client client;
+    
+    
     
     /**
      * Make a canvas.
@@ -46,12 +49,23 @@ public class CanvasGUI extends JPanel implements Canvas {
         this.setPreferredSize(new Dimension(width, height));
         this.users = new String[0];
         this.client = client;
-        addMenuBar();
         addDrawingController(new DrawingController(false));
+        
+        setLayout();
+        addMenuBar();
         
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
+    }
+    
+    private void setLayout() {
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLayout(new BorderLayout());
+        
+        this.add(new MyCanvas(), BorderLayout.CENTER);
+        this.pack();
+        this.setVisible(true);
     }
     
     public void setUsers(String[] users) {
@@ -60,8 +74,20 @@ public class CanvasGUI extends JPanel implements Canvas {
     
     private void addMenuBar() {
     	JMenuBar menuBar = new JMenuBar();
-    	
-    	//add First Menu = Mode
+    	menuBar.add(getUsersMenu());
+    	menuBar.add(getBoardsMenu());
+    	menuBar.add(getModeMenu());
+    	menuBar.add(getColorsMenu());
+        menuBar.add(getSlider());
+        menuBar.add(Box.createHorizontalGlue());
+        this.setJMenuBar(menuBar);
+    }
+    
+    /**
+     * Add the mode menu to the menu mar
+     * @return JMenu representing the mode menu
+     */
+    private JMenu getModeMenu() {
         JMenu mode = new JMenu("Mode");
         JMenuItem drawMenuItem = new JMenuItem("Draw");
         drawMenuItem.addActionListener(new  ActionListener() {
@@ -73,15 +99,19 @@ public class CanvasGUI extends JPanel implements Canvas {
             public void actionPerformed(ActionEvent event) {
                 addDrawingController(new DrawingController(true));
             }});
-        
-        menuBar.add(mode);
         mode.add(drawMenuItem);
         mode.addSeparator();
         mode.add(eraseMenuItem);
         
-        //add Second Menu = Users
+        return mode;
+    }
+    
+    /**
+     * Add the users menu to the menu mar
+     * @return JMenu representing the users menu
+     */
+    private JMenu getUsersMenu() {
         final JMenu usersMenu = new JMenu("Users");
-        menuBar.add(usersMenu);
         //List of Users
         for (String user: users) {
             JLabel label = new JLabel(user);
@@ -109,16 +139,27 @@ public class CanvasGUI extends JPanel implements Canvas {
                 }
             }
         });
-        
-        
-        //add List of Boards
+        return usersMenu;
+    }
+    
+    /**
+     * Add the boards menu to the menu mar
+     * @return JMenu representing the boards menu
+     */
+    private JMenu getBoardsMenu() {
+      //add List of Boards
         final JMenu boards = new JMenu("Board(s)");
-        menuBar.add(boards);
+
+        //new board option
+        boards.add(new JMenuItem("New Board"));
+        boards.addSeparator();
+        
         //List of Boards
         String[] listBoards = client.getBoards();
         for (String board: listBoards) {
             boards.add(new JMenuItem(board));
         }
+
         
         boards.addMenuListener(new MenuListener() {
             @Override
@@ -132,13 +173,24 @@ public class CanvasGUI extends JPanel implements Canvas {
             @Override
             public void menuSelected(MenuEvent arg0) {
                 client.updateBoards();
-                boards.removeAll();
+                for (int i=boards.getItemCount()-1; i>1; i--)
+                {
+                    boards.remove(i);
+                }
                 for (String board: client.getBoards()) {
                     boards.add(new JMenuItem(board));
                 }
             }
         });
         
+        return boards;
+    }
+    
+    /**
+     * Add the colors menu to the menu bar
+     * @return JMenu representing the colors menu
+     */
+    private JMenu getColorsMenu() {
         class ColorActionListener implements ActionListener {
             Color newColor;
             public ColorActionListener(Color singleColor) {
@@ -152,7 +204,6 @@ public class CanvasGUI extends JPanel implements Canvas {
         
         //add Colors
         JMenu colors = new JMenu("Paint Color");
-        menuBar.add(colors);
         Object[][] listColors = {{"Black", Color.BLACK},
                                 {"Blue", Color.BLUE},
                                 {"Cyan", Color.CYAN},
@@ -168,6 +219,13 @@ public class CanvasGUI extends JPanel implements Canvas {
             colors.add(item);
         }
         
+        return colors;
+    }
+    /**
+     * add slider to the menu bar
+     * @return JSlider representing the slider
+     */
+    private JSlider getSlider() {
         class SliderChangeListener implements ChangeListener {
 
             public void stateChanged(ChangeEvent e) {
@@ -186,49 +244,50 @@ public class CanvasGUI extends JPanel implements Canvas {
         slider.setMinorTickSpacing(2);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        slider.setSize(200, 200);
+        //slider.setSize(50, 1000);
         slider.setVisible(true);
         
-        this.add("Menu", menuBar);
-        this.add(slider);
-        
+        return slider;
     }
-    
-    /**
-     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-     */
-    @Override
-    public void paintComponent(Graphics g) {
-        // If this is the first time paintComponent() is being called,
-        // make our drawing buffer.
-        if (drawingBuffer == null) {
-            makeDrawingBuffer();
-        }
-        
-        // Copy the drawing buffer to the screen.
-        g.drawImage(drawingBuffer, 0, 0, null);
-    }
-    
-    /*
-     * Make the drawing buffer and draw some starting content for it.
-     */
-    private void makeDrawingBuffer() {
-        drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        fillWithWhite();
-    }
-    
-    /*
-     * Make the drawing buffer entirely white.
-     */
-    private void fillWithWhite() {
-        final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+    class MyCanvas extends JPanel {
 
-        g.setColor(Color.WHITE);
-        g.fillRect(0,  0,  getWidth(), getHeight());
-        
-        // IMPORTANT!  every time we draw on the internal drawing buffer, we
-        // have to notify Swing to repaint this component on the screen.
-        this.repaint();
+        /**
+         * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+         */
+        @Override
+        public void paintComponent(Graphics g) {
+            // If this is the first time paintComponent() is being called,
+            // make our drawing buffer.
+            if (drawingBuffer == null) {
+                makeDrawingBuffer();
+            }
+            
+            // Copy the drawing buffer to the screen.
+            g.drawImage(drawingBuffer, 0, 0, null);
+        }
+    
+    
+        /*
+         * Make the drawing buffer and draw some starting content for it.
+         */
+        private void makeDrawingBuffer() {
+            drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+            fillWithWhite();
+        }
+    
+        /*
+         * Make the drawing buffer entirely white.
+         */
+        private void fillWithWhite() {
+            final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+    
+            g.setColor(Color.WHITE);
+            g.fillRect(0,  0,  getWidth(), getHeight());
+            
+            // IMPORTANT!  every time we draw on the internal drawing buffer, we
+            // have to notify Swing to repaint this component on the screen.
+            this.repaint();
+        }
     }
     
     /*
