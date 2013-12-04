@@ -13,9 +13,9 @@ import Command.Command;
 public class Client {
     
     //the username the client will go by in this session
-    //must be unique; no other clients can have this username
+    //must be unique; no other clients can have this user name
     private final String username;
-    //the same of the board currently being drawn upon
+    //the name of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
     private Canvas canvas;

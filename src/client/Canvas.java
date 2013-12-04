@@ -45,7 +45,7 @@ public class Canvas extends JPanel {
         System.out.println(client);
         this.client = client;
         addMenuBar();
-        addDrawingController(new DrawingController());
+        addDrawingController(new DrawingController(false));
         
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
@@ -60,12 +60,12 @@ public class Canvas extends JPanel {
         JMenuItem drawMenuItem = new JMenuItem("Draw");
         drawMenuItem.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                addDrawingController(new DrawingController());
+                addDrawingController(new DrawingController(false));
             }});
         JMenuItem eraseMenuItem = new JMenuItem("Erase");
         eraseMenuItem.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                addDrawingController(new EraserController());
+                addDrawingController(new DrawingController(true));
             }});
         
         menuBar.add(mode);
@@ -169,7 +169,6 @@ public class Canvas extends JPanel {
     private void makeDrawingBuffer() {
         drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         fillWithWhite();
-        drawSmile();
     }
     
     /*
@@ -180,39 +179,6 @@ public class Canvas extends JPanel {
 
         g.setColor(Color.WHITE);
         g.fillRect(0,  0,  getWidth(), getHeight());
-        
-        // IMPORTANT!  every time we draw on the internal drawing buffer, we
-        // have to notify Swing to repaint this component on the screen.
-        this.repaint();
-    }
-    
-    /*
-     * Draw a happy smile on the drawing buffer.
-     */
-    private void drawSmile() {
-        final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-
-        // all positions and sizes below are in pixels
-        final Rectangle smileBox = new Rectangle(20, 20, 100, 100); // x, y, width, height
-        final Point smileCenter = new Point(smileBox.x + smileBox.width/2, smileBox.y + smileBox.height/2);
-        final int smileStrokeWidth = 3;
-        final Dimension eyeSize = new Dimension(9, 9);
-        final Dimension eyeOffset = new Dimension(smileBox.width/6, smileBox.height/6);
-        
-        g.setColor(Color.BLACK);
-        g.setStroke(new BasicStroke(smileStrokeWidth));
-        
-        // draw the smile -- an arc inscribed in smileBox, starting at -30 degrees (southeast)
-        // and covering 120 degrees
-        g.drawArc(smileBox.x, smileBox.y, smileBox.width, smileBox.height, -30, -120);
-        
-        // draw some eyes to make it look like a smile rather than an arc
-        for (int side: new int[] { -1, 1 }) {
-            g.fillOval(smileCenter.x + side * eyeOffset.width - eyeSize.width/2,
-                       smileCenter.y - eyeOffset.height - eyeSize.width/2,
-                       eyeSize.width,
-                       eyeSize.height);
-        }
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
         // have to notify Swing to repaint this component on the screen.
@@ -254,8 +220,12 @@ public class Canvas extends JPanel {
     private class DrawingController implements MouseListener, MouseMotionListener {
         // store the coordinates of the last mouse event, so we can
         // draw a line segment from that last point to the point of the next mouse event.
-        private int lastX, lastY; 
+        private int lastX, lastY;
+        private final boolean isErasing;
 
+        public DrawingController(boolean erasing) {
+            this.isErasing = erasing;
+        }
         /*
          * When mouse button is pressed down, start drawing.
          */
@@ -271,7 +241,10 @@ public class Canvas extends JPanel {
         public void mouseDragged(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, client.getCurrentColor(), client.getCurrentWidth());
+            
+            Color color = client.getCurrentColor();
+            if (isErasing) {    color = Color.white; }
+            drawLineSegment(lastX, lastY, x, y, color, client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
@@ -282,42 +255,5 @@ public class Canvas extends JPanel {
         public void mouseReleased(MouseEvent e) { }
         public void mouseEntered(MouseEvent e) { }
         public void mouseExited(MouseEvent e) { }
-    }
-    
-    /*
-     * EraserController handles the user's freehand drawing.
-     */
-    private class EraserController implements MouseListener, MouseMotionListener {
-        // store the coordinates of the last mouse event, so we can
-        // draw a line segment from that last point to the point of the next mouse event.
-        private int lastX, lastY; 
-
-        /*
-         * When mouse button is pressed down, start drawing.
-         */
-        public void mousePressed(MouseEvent e) {
-            lastX = e.getX();
-            lastY = e.getY();
-        }
-
-        /*
-         * When mouse moves while a button is pressed down,
-         * draw a line segment.
-         */
-        public void mouseDragged(MouseEvent e) {
-            int x = e.getX();
-            int y = e.getY();
-            drawLineSegment(lastX, lastY, x, y, Color.WHITE, client.getCurrentWidth());
-            lastX = x;
-            lastY = y;
-        }
-
-        // Ignore all these other mouse events.
-        public void mouseMoved(MouseEvent e) { }
-        public void mouseClicked(MouseEvent e) { }
-        public void mouseReleased(MouseEvent e) { }
-        public void mouseEntered(MouseEvent e) { }
-        public void mouseExited(MouseEvent e) { }
-    }
-    
+    }    
 }
