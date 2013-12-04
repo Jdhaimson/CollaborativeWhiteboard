@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.net.Socket;
 
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -49,7 +50,7 @@ public class Client {
         
         final JDialog dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
-        Container dialogContainer = new Container();
+        final Container dialogContainer = new Container();
         GroupLayout layout = new GroupLayout(dialogContainer);
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
@@ -64,7 +65,12 @@ public class Client {
         hUsername.addComponent(usernameLabel).addComponent(username);
         
         //TODO:get boards
-        JList boardList = new JList<String>(new String[]{"Board 1", "Board 2", "Board 3"}); //data has type Object[]
+        final DefaultListModel<String> boardListModel = new DefaultListModel<String>();
+        String[] tempBoards = new String[]{"Board 1", "Board 2", "Board 3"};
+        for (int i=0; i<tempBoards.length;i++) {
+            boardListModel.addElement(tempBoards[i]);
+        }
+        JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
         boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         boardList.setLayoutOrientation(JList.VERTICAL);
         boardList.setVisibleRowCount(-1);
@@ -73,7 +79,7 @@ public class Client {
         
         SequentialGroup hNewBoard = layout.createSequentialGroup();
         JLabel newBoardLabel = new JLabel("New Board:");
-        JTextField newBoard = new JTextField(10);
+        final JTextField newBoard = new JTextField(10);
         newBoard.setName("newBoard");
         JButton newBoardButton = new JButton("Add Board");
         hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
@@ -104,22 +110,33 @@ public class Client {
         
         startButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
-                if (checkForUniqueUser(username.getText())) {
+                if (createUser(username.getText())) {
                     dialog.setVisible(false);
                     setupCanvas();
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        });    
+        });
+        
+        newBoardButton.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                if (newBoard(newBoard.getText())) {
+                    boardListModel.addElement(newBoard.getText());
+                    newBoard.setText("");
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
     
     /**
-     * Checks with the server to make sure the username hasn't already been taken
+     * Checks with the server to make sure the username hasn't already been taken and if it hasn't, create the user
      * @param username: the user's choice of username
-     * @return: true if the username is unique, false if it is not
+     * @return: true if username creation is successful, false if not
      */
-    public boolean checkForUniqueUser(String username) {
+    public boolean createUser(String username) {
         return true;
     }
     
@@ -144,13 +161,12 @@ public class Client {
     }
     
     /**
-     * Creates a new board on the server and names it with the given name
-     * Sets current board name to the new name
-     * Wipes the canvas clean
-     * Sets users on the canvas to only this user
+     * Checks that the board name hasn't already been taken and if it hasn't, creates a new board on the server and names it with the given name
      * @param newBoardName: the name to name the new board with
+     * @return: true if the board creation is successful, false if not
      */
-    public void newBoard(String newBoardName) {  
+    public boolean newBoard(String newBoardName) {  
+        return true;
     }
     
     /**
