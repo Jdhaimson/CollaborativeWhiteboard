@@ -107,7 +107,6 @@ public class CanvasGUI extends JPanel implements Canvas {
                     label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
                     usersMenu.add(label);
                 }
-                repaint();
             }
         });
         
@@ -137,7 +136,6 @@ public class CanvasGUI extends JPanel implements Canvas {
                 for (String board: client.getBoards()) {
                     boards.add(new JMenuItem(board));
                 }
-                repaint();
             }
         });
         
@@ -218,6 +216,11 @@ public class CanvasGUI extends JPanel implements Canvas {
         drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         fillWithWhite();
         drawSmile();
+    }
+    
+    public void setDrawingBuffer(BufferedImage newImage) {
+        drawingBuffer = newImage;
+        repaint();
     }
     
     /*

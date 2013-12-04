@@ -174,6 +174,7 @@ public class Client {
      * @param newImage: the BufferedImage to set the canvas's image to
      */
     public void updateCanvasImage(BufferedImage newImage) {
+        canvas.setDrawingBuffer(newImage);
     }
     
     /**
@@ -189,7 +190,7 @@ public class Client {
      */
     public void updateUsers() {
         //TODO
-        canvas.setUsers(new String[] {"Jessica", "Juan", "Josh"});
+        setCanvasUsers(new String[] {"Jessica", "Juan", "Josh"});
     }
     
     /**
@@ -197,6 +198,7 @@ public class Client {
      * @param users: the list of users to set for the canvas
      */
     public void setCanvasUsers(String[] users) {
+        canvas.setUsers(users);
     }
     
     /**
@@ -205,20 +207,6 @@ public class Client {
     public void updateBoards() {
         //TODO
         this.boards = new String[] {"Board 1", "Board 2", "Board 3"};
-    }
-    
-    /**
-     * Changes the color the user is using to paint on the canvas
-     * @param color: the current color of choice to switch to
-     */
-    public void changeColor(Color newColor) {
-    }
-    
-    /**
-     * Changes the width of the stroke the user is painting with on the canvas
-     * @param newWidth: the number representing the new widht of the stroke to use
-     */
-    public void changeWidth(float newWidth) {
     }
     
     /**
