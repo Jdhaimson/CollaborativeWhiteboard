@@ -33,9 +33,10 @@ public class CanvasGUI extends JPanel implements Canvas {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
-    private String name;
     private String[] users;
     private Client client;
+    
+    //TODO:need current board name in menu bar
     
     /**
      * Make a canvas.

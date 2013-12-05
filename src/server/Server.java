@@ -12,11 +12,10 @@ public class Server {
     Socket[] clients;
     
     /**
-     * Iterates through all the sockets except for the socket given as an argument and sends the command to each
-     * @param command: the string to send to each socket
+     * Iterates through all the sockets and sends the command to each
      * @param socket: the one socket that sent the command to the server in the first place and thus does not need to be updated
      */
-    public synchronized void updateClients(String command, Socket socket) {
+    public synchronized void updateClients(String command) {
         //TODO
     }
     
