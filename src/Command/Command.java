@@ -9,10 +9,12 @@ import client.CanvasGUI;
 public class Command {
     private final String command;
     private final String[] arguments;
+    private final String boardName;
     
-    public Command(String command, String[] arguments) {
+    public Command(String command, String[] arguments, String boardName) {
         this.command = command;
         this.arguments = arguments;
+        this.boardName = boardName;
     }
     
     /**
@@ -20,14 +22,15 @@ public class Command {
      * @param commandString: the string in the format "draw boardName command arg1 arg2 arg3..."
      * @return a Command object with the command and the arguments
      */
-    public static Command parseCommand(String commandString) {
+    public Command(String commandString) {
         String[] elements = commandString.split(" ");
         String[] arguments = new String[elements.length-3];
         for (int i=3; i<elements.length;i++) {
             arguments[i-1] = elements[i];
         }
-        Command command = new Command(elements[2], arguments);
-        return command;
+        this.command = elements[2];
+        this.arguments = arguments;
+        this.boardName = elements[1];
     }
     
     /**
@@ -63,5 +66,9 @@ public class Command {
                 }
             }
         }
+    }
+    
+    public boolean checkBoardName(String compareBoardName) {
+        return this.boardName.equals(compareBoardName);
     }
 }

@@ -274,6 +274,11 @@ public class CanvasGUI extends JFrame implements Canvas {
             drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
             fillWithWhite();
         }
+
+        public void setDrawingBuffer(BufferedImage newImage) {
+            drawingBuffer = newImage;
+            repaint();
+        }
     
         /*
          * Make the drawing buffer entirely white.

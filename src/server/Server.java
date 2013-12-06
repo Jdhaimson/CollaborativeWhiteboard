@@ -17,24 +17,32 @@ public class Server {
      * @param socket: the one socket that sent the command to the server in the first place and thus does not need to be updated
      */
     public synchronized void updateClients(String command, Socket socket) {
+        //TODO
     }
     
     /**
      * Performs the command on the server's version of the canvas
+     * Requires valid board name
      * @param boardName: the board to draw on
      * @param command: the command to perform on the board
      */
     public void updateBoard(String boardName, Command command) {
+        command.invokeCommand(boards.get(boardName));
     }
     
     /**
-     * Creates a new board with the specified boardName
-     * Switches the user from their previous board to this one
-     * Requires a unique board name
+     * Checks if the board name is unique
+     * Creates a new board with the specified board name
      * @param boardName: the name of the new board
-     * @param username: the name of the user who created the board
+     * @return: whether or not the new board was successfully made
      */
-    public void newBoard(String boardName, String username) {
+    public synchronized boolean newBoard(String boardName) {
+        if(boards.contains(boardName)) {
+            return false;
+        } else {
+            boards.put(boardName, new SimpleCanvas(boardName));
+            return true;
+        }
     }
     
     /**
@@ -46,13 +54,18 @@ public class Server {
      * @param newBoardName: the name of the board the user is switching to
      */
     public void switchBoard(String username, Socket socket, String oldBoardName, String newBoardName) {
+        //TODO
     }
     
     /**
      * Removes the user from all boards
      * @param username: the username of the user exiting
      */
-    public void exit(String username) {
+    public synchronized void exit(String username) {
+        for(String boardName : boards.keySet()) {
+            SimpleCanvas canvas = boards.get(boardName);
+            canvas.deleteUser(username);
+        }
     }
     
     /**
@@ -60,7 +73,37 @@ public class Server {
      * @param username: the entering user
      * @param boardName: the board they have chosen to enter
      */
-    public void enter(String username, String boardName) {
+    public synchronized void enter(String username, String boardName) {
+        boards.get(boardName).addUser(username);
+    }
+    
+    /**
+     * Gets a list of all the board names
+     * @return: a list of a all the board names
+     */
+    public synchronized String[] getBoards() {
+        return boards.keySet().toArray(new String[0]);
+    }
+    
+    /**
+     * Checks if the username is unique and if it is, return true and enter the user
+     * @param username: the username to check
+     * @param boardName: the board the user wants to enter
+     * @return: whether or not the user entered successfully
+     */
+    public boolean checkUsers(String username, String boardName) {
+        boolean unique = true;
+        for (String board : boards.keySet()) {
+            if (!boards.get(board).checkUsername(username)) {
+                unique = false;
+            }
+        }
+        if (unique == true) {
+            enter(username, boardName);
+            return true;
+        } else {
+            return false;
+        }
     }
     
 }
