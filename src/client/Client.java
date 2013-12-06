@@ -31,9 +31,9 @@ import Command.Command;
 public class Client {
     
     //the username the client will go by in this session
-    //must be unique; no other clients can have this username
+    //must be unique; no other clients can have this user name
     private String username;
-    //the same of the board currently being drawn upon
+    //the name of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
     private Canvas canvas;
@@ -171,7 +171,7 @@ public class Client {
             }
         }
     }
-    
+
     /**
      * Checks with the server to make sure the username hasn't already been taken and if it hasn't, create the user
      * @param username: the user's choice of username
@@ -189,9 +189,6 @@ public class Client {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
         canvas = new Canvas(800, 600, this);
-        frame.add(canvas, BorderLayout.CENTER);
-        frame.pack();
-        frame.setVisible(true);
     }
     
     /**
