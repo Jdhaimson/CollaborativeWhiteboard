@@ -13,6 +13,10 @@ public class CommandQueue {
         users = new String[0];
     }
     
+    public LinkedList<Command> getCommands() {
+        return commands;
+    }
+    
     public void addCommand(Command command) {
         this.commands.add(command);
     }

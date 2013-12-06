@@ -198,7 +198,7 @@ public class Client {
     
     /**
      * Switches the current board to the board with the given name
-     * calls updateCanvasImage to set the image of the canvas to the one obtained by the server
+     * server switch command
      * Updates the current users of the canvas
      * @param newBoardName: the name of the new board
      */
@@ -217,19 +217,11 @@ public class Client {
     }
     
     /**
-     * Sets the canvas's bufferedImage to newImage
-     * @param newImage: the BufferedImage to set the canvas's image to
-     */
-    public void updateCanvasImage(BufferedImage newImage) {
-        canvas.setDrawingBuffer(newImage);
-    }
-    
-    /**
      * Check that the boardName and currentBoardName are the same and then perform the command on the canvas
      * @param boardName: the board this command is for
      * @param command: the command to perform on the canvas
      */
-    public void updateCanvasCommand(String boardName, Command command) {
+    public void commandCanvas(String boardName, Command command) {
         if (command.checkBoardName(boardName)) {
             command.invokeCommand(canvas);
         }

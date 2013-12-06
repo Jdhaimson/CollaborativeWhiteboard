@@ -107,4 +107,12 @@ public class Server {
         }
     }
     
+    public Socket[] getClients() {
+        return clients;
+    }
+    
+    public CommandQueue getCommands(String boardName) {
+        return boards.get(boardName);
+    }
+    
 }
