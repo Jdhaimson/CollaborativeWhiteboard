@@ -4,12 +4,12 @@ import java.util.LinkedList;
 
 import Command.Command;
 
-public class CommandQueue {
+public class Board {
     // image where the user's drawing is stored
     private LinkedList<Command> commands = new LinkedList<Command>();
     private String[] users;
     
-    public CommandQueue() {
+    public Board() {
         users = new String[0];
     }
     

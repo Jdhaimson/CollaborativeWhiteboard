@@ -67,7 +67,7 @@ public class ServerProtocol implements Runnable {
     }
     
     public void updateBoard(String boardName) {
-        CommandQueue commands = server.getCommands(boardName);
+        Board commands = server.getCommands(boardName);
         for (Command command : commands.getCommands()) {
             commandBoard(this.socket, command);
         }

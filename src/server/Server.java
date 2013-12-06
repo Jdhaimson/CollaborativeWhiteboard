@@ -2,15 +2,14 @@ package server;
 
 import java.net.Socket;
 import java.util.Hashtable;
-import java.util.LinkedList;
 
 import Command.Command;
 
 public class Server {
     
     //stores all the boards created as canvases associated with names
-    private Hashtable<String, CommandQueue> boards = new Hashtable<String, CommandQueue>();
-    Socket[] clients;
+    private Hashtable<String, Board> boards = new Hashtable<String, Board>();
+    private Socket[] clients;
     
     
     /**
@@ -41,7 +40,7 @@ public class Server {
         if(boards.contains(boardName)) {
             return false;
         } else {
-            boards.put(boardName, new CommandQueue());
+            boards.put(boardName, new Board());
             return true;
         }
     }
@@ -64,7 +63,7 @@ public class Server {
      */
     public synchronized void exit(String username) {
         for(String boardName : boards.keySet()) {
-            CommandQueue board = boards.get(boardName);
+            Board board = boards.get(boardName);
             board.deleteUser(username);
         }
     }
@@ -111,7 +110,7 @@ public class Server {
         return clients;
     }
     
-    public CommandQueue getCommands(String boardName) {
+    public Board getCommands(String boardName) {
         return boards.get(boardName);
     }
     
