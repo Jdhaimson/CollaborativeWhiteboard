@@ -2,14 +2,16 @@ package server;
 
 import java.net.Socket;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 import Command.Command;
 
 public class Server {
     
     //stores all the boards created as canvases associated with names
-    private Hashtable<String, SimpleCanvas> boards = new Hashtable<String, SimpleCanvas>();
+    private Hashtable<String, CommandQueue> boards = new Hashtable<String, CommandQueue>();
     Socket[] clients;
+    
     
     /**
      * Iterates through all the sockets and sends the command to each
@@ -20,13 +22,13 @@ public class Server {
     }
     
     /**
-     * Performs the command on the server's version of the canvas
+     * Add the command on the server's queue of commands
      * Requires valid board name
      * @param boardName: the board to draw on
      * @param command: the command to perform on the board
      */
     public void updateBoard(String boardName, Command command) {
-        command.invokeCommand(boards.get(boardName));
+        boards.get(boardName).addCommand(command);
     }
     
     /**
@@ -39,7 +41,7 @@ public class Server {
         if(boards.contains(boardName)) {
             return false;
         } else {
-            boards.put(boardName, new SimpleCanvas(boardName));
+            boards.put(boardName, new CommandQueue());
             return true;
         }
     }
@@ -62,8 +64,8 @@ public class Server {
      */
     public synchronized void exit(String username) {
         for(String boardName : boards.keySet()) {
-            SimpleCanvas canvas = boards.get(boardName);
-            canvas.deleteUser(username);
+            CommandQueue board = boards.get(boardName);
+            board.deleteUser(username);
         }
     }
     

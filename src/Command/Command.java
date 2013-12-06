@@ -3,8 +3,7 @@ package Command;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import server.SimpleCanvas;
-import client.CanvasGUI;
+import client.Canvas;
 
 public class Command {
     private final String command;
@@ -70,5 +69,15 @@ public class Command {
     
     public boolean checkBoardName(String compareBoardName) {
         return this.boardName.equals(compareBoardName);
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder argumentString = new StringBuilder(" ");
+        for (String arg : arguments) {
+            argumentString.append(arg+" ");
+        }
+        argumentString.deleteCharAt(argumentString.length()-1);
+        return "draw "+boardName+" "+command+" "+argumentString;
     }
 }

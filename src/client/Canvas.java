@@ -22,18 +22,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import Command.Canvas;
-
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class CanvasGUI extends JPanel implements Canvas {
+public class Canvas extends JPanel {
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
-    private String[] users;
     private Client client;
     
     //TODO:need current board name in menu bar
@@ -43,9 +40,8 @@ public class CanvasGUI extends JPanel implements Canvas {
      * @param width width in pixels
      * @param height height in pixels
      */
-    public CanvasGUI(int width, int height, Client client) {
+    public Canvas(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
-        this.users = new String[0];
         this.client = client;
         addMenuBar();
         addDrawingController(new DrawingController());
@@ -53,10 +49,6 @@ public class CanvasGUI extends JPanel implements Canvas {
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
-    }
-    
-    public void setUsers(String[] users) {
-        this.users = users;
     }
     
     private void addMenuBar() {
@@ -84,7 +76,7 @@ public class CanvasGUI extends JPanel implements Canvas {
         final JMenu usersMenu = new JMenu("Users");
         menuBar.add(usersMenu);
         //List of Users
-        for (String user: users) {
+        for (String user: client.getUsers()) {
             JLabel label = new JLabel(user);
             label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
             usersMenu.add(label);
@@ -101,9 +93,8 @@ public class CanvasGUI extends JPanel implements Canvas {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                client.updateUsers();
                 usersMenu.removeAll();
-                for (String user: users) {
+                for (String user: client.getUsers()) {
                     JLabel label = new JLabel(user);
                     label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
                     usersMenu.add(label);

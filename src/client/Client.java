@@ -38,7 +38,7 @@ public class Client {
     //the same of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
-    private CanvasGUI canvas;
+    private Canvas canvas;
     //the GUI for this client
     private JFrame frame;
     //the color the user is currently drawing in
@@ -190,7 +190,7 @@ public class Client {
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        canvas = new CanvasGUI(800, 600, this);
+        canvas = new Canvas(800, 600, this);
         frame.add(canvas, BorderLayout.CENTER);
         frame.pack();
         frame.setVisible(true);
@@ -238,17 +238,9 @@ public class Client {
     /**
      * Gets the users for the current board from the server and sets them
      */
-    public void updateUsers() {
+    public String[] getUsers() {
         //TODO
-        setCanvasUsers(new String[] {"Jessica", "Juan", "Josh"});
-    }
-    
-    /**
-     * Sets who the users are for the current canvas
-     * @param users: the list of users to set for the canvas
-     */
-    public void setCanvasUsers(String[] users) {
-        canvas.setUsers(users);
+        return new String[] {"Jessica", "Juan", "Josh"};
     }
     
     /**
