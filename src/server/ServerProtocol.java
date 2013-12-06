@@ -9,24 +9,24 @@ public class ServerProtocol implements Runnable {
     /*
      * Receives:
      * 
-     * New Board = “new boardName”
-     * Switch Board = “switch username newBoardName”
-     * Exit = “exit username”
-     * Draw = “draw boardName command param1 param2 param3”
-     *      Example: “draw boardName drawLineSegment x1 y1 x2 y2 color width”
-     * Get Users = “users boardName”
-     * Get boards = “boards”
-     * Check Users = “check username boardName”
+     * New Board = "new boardName"
+     * Switch Board = "switch username newBoardName"
+     * Exit = "exit username"
+     * Draw = "draw boardName command param1 param2 param3"
+     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
+     * Get Users = "users boardName"
+     * Get boards = "boards"
+     * Check Users = "check username boardName"
      * 
      * 
      * Sends: 
      * 
-     * Update Users = “users boardName user1 user2 user3...”
-     * Update Available Boards = “boards board1 board2 board3”
-     * Draw = “draw boardName command param1 param2 param3”
-     *      Example: “draw boardName drawLineSegment x1 y1 x2 y2 color width”
-     * Check Users = “check username boolean”
-     * New Board = “new boardName boolean”
+     * Update Users = "users boardName user1 user2 user3..."
+     * Update Available Boards = "boards board1 board2 board3"
+     * Draw = "draw boardName command param1 param2 param3"
+     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
+     * Check Users = "check username boolean"
+     * New Board = "new boardName boolean"
      */
     
     private final Socket socket;
