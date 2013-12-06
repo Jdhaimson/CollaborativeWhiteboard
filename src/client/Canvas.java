@@ -23,31 +23,28 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import Command.Canvas;
-
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class CanvasGUI extends JFrame implements Canvas {
+public class Canvas extends JFrame {
+
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
-    private String name;
-    private String[] users;
     private Client client;
-    
-    
+
+    //TODO:need current board name in menu bar
+
     
     /**
      * Make a canvas.
      * @param width width in pixels
      * @param height height in pixels
      */
-    public CanvasGUI(int width, int height, Client client) {
+    public Canvas(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
-        this.users = new String[0];
         this.client = client;
         addDrawingController(new DrawingController(false));
         
@@ -59,13 +56,17 @@ public class CanvasGUI extends JFrame implements Canvas {
         // wait until paintComponent() is first called.
     }
     
+
     private void setLayout() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
         
-        this.add(new MyCanvas(), BorderLayout.CENTER);
+        MyCanvas myCanvas = new MyCanvas();
+        this.add(myCanvas, BorderLayout.CENTER);
         this.pack();
         this.setVisible(true);
+        
+        myCanvas.add(new JLabel("Hello"));
     }
     
     public void setUsers(String[] users) {
@@ -113,7 +114,7 @@ public class CanvasGUI extends JFrame implements Canvas {
     private JMenu getUsersMenu() {
         final JMenu usersMenu = new JMenu("Users");
         //List of Users
-        for (String user: users) {
+        for (String user: client.getUsers()) {
             JLabel label = new JLabel(user);
             label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
             usersMenu.add(label);
@@ -130,9 +131,8 @@ public class CanvasGUI extends JFrame implements Canvas {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                client.updateUsers();
                 usersMenu.removeAll();
-                for (String user: users) {
+                for (String user: client.getUsers()) {
                     JLabel label = new JLabel(user);
                     label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
                     usersMenu.add(label);

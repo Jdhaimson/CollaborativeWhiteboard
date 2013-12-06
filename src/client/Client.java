@@ -9,8 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.DefaultListModel;
@@ -24,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -39,7 +38,7 @@ public class Client {
     //the name of the board currently being drawn upon
     private String currentBoardName;
     //the board the client has selected and is drawing on
-    private CanvasGUI canvas;
+    private Canvas canvas;
     //the GUI for this client
     private JFrame frame;
     //the color the user is currently drawing in
@@ -191,12 +190,12 @@ public class Client {
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        canvas = new CanvasGUI(800, 600, this);
+        canvas = new Canvas(800, 600, this);
     }
     
     /**
      * Switches the current board to the board with the given name
-     * calls updateCanvasImage to set the image of the canvas to the one obtained by the server
+     * server switch command
      * Updates the current users of the canvas
      * @param newBoardName: the name of the new board
      */
@@ -215,19 +214,11 @@ public class Client {
     }
     
     /**
-     * Sets the canvas's bufferedImage to newImage
-     * @param newImage: the BufferedImage to set the canvas's image to
-     */
-    public void updateCanvasImage(BufferedImage newImage) {
-        canvas.setDrawingBuffer(newImage);
-    }
-    
-    /**
      * Check that the boardName and currentBoardName are the same and then perform the command on the canvas
      * @param boardName: the board this command is for
      * @param command: the command to perform on the canvas
      */
-    public void updateCanvasCommand(String boardName, Command command) {
+    public void commandCanvas(String boardName, Command command) {
         if (command.checkBoardName(boardName)) {
             command.invokeCommand(canvas);
         }
@@ -236,17 +227,9 @@ public class Client {
     /**
      * Gets the users for the current board from the server and sets them
      */
-    public void updateUsers() {
+    public String[] getUsers() {
         //TODO
-        setCanvasUsers(new String[] {"Jessica", "Juan", "Josh"});
-    }
-    
-    /**
-     * Sets who the users are for the current canvas
-     * @param users: the list of users to set for the canvas
-     */
-    public void setCanvasUsers(String[] users) {
-        canvas.setUsers(users);
+        return new String[] {"Jessica", "Juan", "Josh"};
     }
     
     /**
