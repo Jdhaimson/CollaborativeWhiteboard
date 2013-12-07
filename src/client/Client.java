@@ -53,9 +53,14 @@ public class Client {
     
     public Client() {
         updateBoards();
+        startDialog();
         
+    }
+    
+    private void startDialog() {
         dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
+        dialog.setResizable(false);
         final Container dialogContainer = new Container();
         GroupLayout layout = new GroupLayout(dialogContainer);
         layout.setAutoCreateGaps(true);
@@ -188,6 +193,7 @@ public class Client {
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+        frame.setResizable(false);
         canvas = new Canvas(800, 600, this);
     }
     
@@ -284,6 +290,10 @@ public class Client {
     
     public String[] getBoards() {
         return boards;
+    }
+    
+    public Canvas getCanvas() {
+        return canvas;
     }
     
     /*

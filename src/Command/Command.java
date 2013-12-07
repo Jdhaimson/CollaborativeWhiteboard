@@ -2,6 +2,7 @@ package Command;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import client.Canvas;
 
@@ -25,7 +26,7 @@ public class Command {
         String[] elements = commandString.split(" ");
         String[] arguments = new String[elements.length-3];
         for (int i=3; i<elements.length;i++) {
-            arguments[i-1] = elements[i];
+            arguments[i-3] = elements[i];
         }
         this.command = elements[2];
         this.arguments = arguments;
@@ -54,8 +55,25 @@ public class Command {
             } else {
                 Object[] typedArgs = new Object[arguments.length];
                 for (int i=0; i<typedArgs.length;i++) {
-                    //TODO: can't cast primitive types like this, use if/else
-                    typedArgs[i] = parameters[i].cast(arguments[i]);
+                    if (parameters[i].equals(int.class)) {
+                        typedArgs[i] = Integer.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(float.class)) {
+                        typedArgs[i] = Float.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(double.class)) {
+                        typedArgs[i] = Double.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(long.class)) {
+                        typedArgs[i] = Long.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(boolean.class)) {
+                        typedArgs[i] = Boolean.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(short.class)) {
+                        typedArgs[i] = Float.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(byte.class)) {
+                        typedArgs[i] = Byte.valueOf(arguments[i]);
+                    } else if(parameters[i].equals(char.class)) {
+                        typedArgs[i] = arguments[i].charAt(0);
+                    } else {
+                        typedArgs[i] = parameters[i].cast(arguments[i]);
+                    }
                 }
                 try {
                     method.invoke(canvas, typedArgs);
@@ -78,6 +96,13 @@ public class Command {
             argumentString.append(arg+" ");
         }
         argumentString.deleteCharAt(argumentString.length()-1);
-        return "draw "+boardName+" "+command+" "+argumentString;
+        return "draw "+boardName+" "+command+argumentString;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Command)) return false;
+        Command commandObj = (Command) obj;
+        return commandObj.command.equals(command) && Arrays.equals(commandObj.arguments, arguments) && commandObj.boardName.equals(boardName);
     }
 }

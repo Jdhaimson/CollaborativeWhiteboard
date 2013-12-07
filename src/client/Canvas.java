@@ -7,8 +7,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -55,6 +53,9 @@ public class Canvas extends JFrame {
         // wait until paintComponent() is first called.
     }
     
+    public BufferedImage getDrawingBuffer() {
+        return drawingBuffer;
+    }
 
     private void setLayout() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,10 +67,6 @@ public class Canvas extends JFrame {
         this.setVisible(true);
         
         myCanvas.add(new JLabel("Hello"));
-    }
-    
-    public void setUsers(String[] users) {
-        this.users = users;
     }
     
     private void addMenuBar() {
@@ -298,10 +295,10 @@ public class Canvas extends JFrame {
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
-    public void drawLineSegment(int x1, int y1, int x2, int y2, Color color, float width) {
+    public void drawLineSegment(int x1, int y1, int x2, int y2, int color, float width) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        
-        g.setColor(color);
+        Color colorObject = new Color(color);
+        g.setColor(colorObject);
         g.setStroke(new BasicStroke(width));
         g.drawLine(x1, y1, x2, y2);
         
@@ -353,7 +350,7 @@ public class Canvas extends JFrame {
             
             Color color = client.getCurrentColor();
             if (isErasing) {    color = Color.white; }
-            drawLineSegment(lastX, lastY, x, y, color, client.getCurrentWidth());
+            drawLineSegment(lastX, lastY, x, y, color.getRGB(), client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
