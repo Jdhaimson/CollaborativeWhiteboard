@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -18,6 +19,9 @@ import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -74,11 +78,11 @@ public class Canvas extends JFrame {
     }
     
     private void addMenuBar() {
-    	JMenuBar menuBar = new JMenuBar();
-    	menuBar.add(getUsersMenu());
-    	menuBar.add(getBoardsMenu());
-    	menuBar.add(getModeMenu());
-    	menuBar.add(getColorsMenu());
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(getUsersMenu());
+        menuBar.add(getBoardsMenu());
+        menuBar.add(getModeMenu());
+        menuBar.add(getColorsMenu());
         menuBar.add(getSlider());
         menuBar.add(Box.createHorizontalGlue());
         this.setJMenuBar(menuBar);
@@ -89,23 +93,34 @@ public class Canvas extends JFrame {
      * @return JMenu representing the mode menu
      */
     private JMenu getModeMenu() {
-        JMenu mode = new JMenu("Mode");
-        JMenuItem drawMenuItem = new JMenuItem("Draw");
+        // Icon next to Mode
+        final ImageIcon eraserIcon = new ImageIcon("../whiteboard/docs/icons/eraser.png");
+        final ImageIcon pencilIcon = new ImageIcon("../whiteboard/docs/icons/pencil.png");
+        
+        final JMenu mode = new JMenu("Mode");
+        mode.setIcon(pencilIcon);
+        
+        JMenuItem drawMenuItem = new JMenuItem("Draw", pencilIcon);
         drawMenuItem.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 addDrawingController(new DrawingController(false));
+                mode.setIcon(pencilIcon);
             }});
-        JMenuItem eraseMenuItem = new JMenuItem("Erase");
+        JMenuItem eraseMenuItem = new JMenuItem("Erase", eraserIcon);
         eraseMenuItem.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 addDrawingController(new DrawingController(true));
+                mode.setIcon(eraserIcon);
             }});
         mode.add(drawMenuItem);
         mode.addSeparator();
         mode.add(eraseMenuItem);
         
+        
+        
         return mode;
     }
+    
     
     /**
      * Add the users menu to the menu mar
@@ -191,34 +206,37 @@ public class Canvas extends JFrame {
      * @return JMenu representing the colors menu
      */
     private JMenu getColorsMenu() {
-        class ColorActionListener implements ActionListener {
-            Color newColor;
-            public ColorActionListener(Color singleColor) {
-                newColor = singleColor;
+        class ColorChangeListener implements ChangeListener {
+            JMenu colors;
+            public ColorChangeListener(JMenu colors) {
+                this.colors = colors;
             }
-
-            public void actionPerformed(ActionEvent e) {
-                client.setCurrentColor(newColor);
+            
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ColorSelectionModel model = (ColorSelectionModel) e.getSource();
+                Color currentColor = model.getSelectedColor();
+                client.setCurrentColor(currentColor);
+                colors.setBorder(BorderFactory.createLineBorder(currentColor,2));
             }
         }
-        
         //add Colors
-        JMenu colors = new JMenu("Paint Color");
-        Object[][] listColors = {{"Black", Color.BLACK},
-                                {"Blue", Color.BLUE},
-                                {"Cyan", Color.CYAN},
-                                {"Green", Color.GREEN},
-                                {"Orange", Color.ORANGE},
-                                {"Magenta", Color.MAGENTA},
-                                {"Yellow", Color.YELLOW}};
-        for (int i = 0; i<listColors.length; i++) {
-            String name = (String)listColors[i][0];
-            Color singleColor = (Color)listColors[i][1];
-            JMenuItem item = new JMenuItem(name);
-            item.addActionListener(new ColorActionListener(singleColor));
-            colors.add(item);
-        }
         
+        JMenu colors = new JMenu("Paint Color");
+        
+        JColorChooser chooser = new JColorChooser(Color.BLACK);
+        colors.add(chooser);
+        chooser.getSelectionModel().addChangeListener(new ColorChangeListener(colors));
+        chooser.setPreviewPanel(new JPanel());
+        colors.setBorder(BorderFactory.createLineBorder(Color.BLACK,2));
+        
+        //remove panels
+        AbstractColorChooserPanel[] panels = chooser.getChooserPanels();
+        for (AbstractColorChooserPanel accp : panels) {
+            if (!accp.getDisplayName().equals("Swatches")) {
+                chooser.removeChooserPanel(accp);
+            }
+        }
         return colors;
     }
     /**
@@ -316,10 +334,10 @@ public class Canvas extends JFrame {
      */
     private void addDrawingController(EventListener listener) {
         if (currentListener != null) {
-        	removeMouseListener((MouseListener) currentListener);
-        	removeMouseMotionListener((MouseMotionListener) currentListener);
+            removeMouseListener((MouseListener) currentListener);
+            removeMouseMotionListener((MouseMotionListener) currentListener);
         }
-    	currentListener = listener;
+        currentListener = listener;
         addMouseListener((MouseListener) currentListener);
         addMouseMotionListener((MouseMotionListener) currentListener);
     }
@@ -354,7 +372,10 @@ public class Canvas extends JFrame {
             
             Color color = client.getCurrentColor();
             if (isErasing) {    color = Color.white; }
-            drawLineSegment(lastX, lastY, x, y, color, client.getCurrentWidth());
+            
+            // to make up for the height of the menu
+            int menuHeight = 73;
+            drawLineSegment(lastX, lastY - menuHeight, x, y - menuHeight, color, client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
