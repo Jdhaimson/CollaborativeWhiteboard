@@ -107,7 +107,13 @@ public class Canvas extends JPanel {
         final JMenu boards = new JMenu("Board(s)");
         menuBar.add(boards);
         //List of Boards
-        String[] listBoards = client.getBoards();
+        String[] listBoards = {};
+		try {
+			listBoards = client.getBoards();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
         for (String board: listBoards) {
             boards.add(new JMenuItem(board));
         }
@@ -123,11 +129,14 @@ public class Canvas extends JPanel {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                client.updateBoards();
                 boards.removeAll();
-                for (String board: client.getBoards()) {
-                    boards.add(new JMenuItem(board));
-                }
+                try {
+					for (String board: client.getBoards()) {
+					    boards.add(new JMenuItem(board));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
             }
         });
         

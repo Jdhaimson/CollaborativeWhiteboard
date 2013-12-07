@@ -1,17 +1,51 @@
 package server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 
 import Command.Command;
 
 public class Server {
     
     //stores all the boards created as canvases associated with names
-    private Hashtable<String, CommandQueue> boards = new Hashtable<String, CommandQueue>();
-    Socket[] clients;
+    private Hashtable<String, Board> boards = new Hashtable<String, Board>();
+    List<Socket> clients = new LinkedList<Socket>();
+    private final ServerSocket serverSocket;
     
+    /**
+     * Create our server on port port
+     * @param port: port for server to listen on
+     * @throws IOException 
+     */
+    public Server(int port) throws IOException {
+    	serverSocket = new ServerSocket(port);
+    	this.newBoard("test");
+    }
+    
+    
+ 
+    /**
+     * Run the server, listening for client connections and handling them.
+     * Never returns unless an exception is thrown.
+     * 
+     * @throws IOException if the main server socket is broken
+     *                     (IOExceptions from individual clients do *not* terminate serve())
+     */
+    public void serve() throws IOException {
+    	System.out.println("Server serving");
+        while (true) {
+            // block until a client connects
+            Socket socket = serverSocket.accept();
+            clients.add(socket);
+            
+            // create new thread for each connection
+            new Thread(new ServerProtocol(socket, this)).start();           
+        }
+    }
     
     /**
      * Iterates through all the sockets and sends the command to each
@@ -38,10 +72,10 @@ public class Server {
      * @return: whether or not the new board was successfully made
      */
     public synchronized boolean newBoard(String boardName) {
-        if(boards.contains(boardName)) {
-            return false;
+        if(boards.containsKey(boardName)) {
+        	return false;
         } else {
-            boards.put(boardName, new CommandQueue());
+            boards.put(boardName, new Board());
             return true;
         }
     }
@@ -54,7 +88,7 @@ public class Server {
      * @param oldBoardName: the name of the board the user is switching from
      * @param newBoardName: the name of the board the user is switching to
      */
-    public void switchBoard(String username, Socket socket, String oldBoardName, String newBoardName) {
+    public void switchBoard(String username, String oldBoardName, String newBoardName) {
         //TODO
     }
     
@@ -64,7 +98,7 @@ public class Server {
      */
     public synchronized void exit(String username) {
         for(String boardName : boards.keySet()) {
-            CommandQueue board = boards.get(boardName);
+            Board board = boards.get(boardName);
             board.deleteUser(username);
         }
     }
@@ -82,8 +116,19 @@ public class Server {
      * Gets a list of all the board names
      * @return: a list of a all the board names
      */
-    public synchronized String[] getBoards() {
-        return boards.keySet().toArray(new String[0]);
+    public synchronized String getBoards() {
+        String[] boardsArray = boards.keySet().toArray(new String[0]);
+       
+        StringBuilder boardsString = new StringBuilder("");
+        for (String board: boardsArray) {
+        	boardsString.append(board + " ");
+        }
+        
+        if(boardsString.length() > 0) {
+        	boardsString.deleteCharAt(boardsString.length() - 1);
+        }
+        
+        return boardsString.toString();
     }
     
     /**
@@ -107,12 +152,24 @@ public class Server {
         }
     }
     
-    public Socket[] getClients() {
+    public List<Socket> getClients() {
         return clients;
     }
     
-    public CommandQueue getCommands(String boardName) {
+    public Board getCommands(String boardName) {
         return boards.get(boardName);
+    }
+    
+    public static void main(String[] args) {
+    	Server server;
+		try {
+			server = new Server(4444);
+			server.serve();
+		} catch (IOException e) {
+			System.out.println("You pooped up");
+			e.printStackTrace();
+		}
+    	
     }
     
 }

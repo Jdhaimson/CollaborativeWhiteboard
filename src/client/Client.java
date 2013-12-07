@@ -8,8 +8,16 @@ import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -47,14 +55,15 @@ public class Client {
     private float currentWidth = 10;
     //the socket with which the user connects to the client
     private Socket socket;
-    //the list of boards the user has to choose from
-    private String[] boards;
+    // Thread pool
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
+    
     private JDialog dialog;
     private DefaultListModel<String> boardListModel;
     private JTextField newBoard;
     
-    public Client() {
-        updateBoards();
+    public Client() throws UnknownHostException, IOException {
+        socket = new Socket("localhost", 4444);
         
         dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
@@ -73,10 +82,20 @@ public class Client {
         hUsername.addComponent(usernameLabel).addComponent(username);
         
         boardListModel = new DefaultListModel<String>();
-        String[] tempBoards = boards;
-        for (int i=0; i<tempBoards.length;i++) {
-            boardListModel.addElement(tempBoards[i]);
-        }
+
+        // Get boards from server and add to data model
+        // TODO: Handle case where there are no boards on server
+        String[] tempBoards;
+		try {
+			tempBoards = this.getBoards();
+			
+			for (int i=0; i<tempBoards.length;i++) {
+	            boardListModel.addElement(tempBoards[i]);
+	        }
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
         final JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
         boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         boardList.setLayoutOrientation(JList.VERTICAL);
@@ -135,6 +154,20 @@ public class Client {
                 NewBoardWorker worker = new NewBoardWorker(newBoard.getText());
                 worker.execute();
                 
+            }
+        });
+        
+        // close socket on exit
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             }
         });
     }
@@ -236,14 +269,6 @@ public class Client {
     }
     
     /**
-     * Gets all of the current boards from the server
-     */
-    public void updateBoards() {
-        //TODO
-        this.boards = new String[] {"Board 1", "Board 2", "Board 3"};
-    }
-    
-    /**
      * Gets the current color to use for drawing a line segment on the canvas
      * @return the currentColor being used to draw
      */
@@ -283,12 +308,25 @@ public class Client {
         this.currentBoardName = currentBoardName;
     }
     
-    public void setBoards(String[] boards) {
-        this.boards = boards;
+    public String[] getBoards() throws Exception {
+        String boards = makeRequest("boards");
+        if(!boards.contains("boards")) {
+        	throw new Exception("Server returned unexpected result: " + boards);
+        }
+        
+        String[] boardsListStrings = boards.split(" ");
+        return Arrays.copyOfRange(boardsListStrings, 1, boardsListStrings.length);
     }
     
-    public String[] getBoards() {
-        return boards;
+    public String makeRequest(String request) throws IOException {
+    	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+        out.println(request);        
+        // All responses are only one line
+        String response = in.readLine();
+        
+        return response;
     }
     
     /*
@@ -298,7 +336,15 @@ public class Client {
         // set up the UI (on the event-handling thread)
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Client client = new Client();
+                try {
+					Client client = new Client();
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         });
     }
