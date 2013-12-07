@@ -187,7 +187,6 @@ public class Canvas extends JFrame {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                client.updateBoards();
                 for (int i=boards.getItemCount()-1; i>1; i--)
                 {
                     boards.remove(i);
