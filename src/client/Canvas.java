@@ -69,8 +69,6 @@ public class Canvas extends JFrame {
         this.add(myCanvas, BorderLayout.CENTER);
         this.pack();
         this.setVisible(true);
-        
-        myCanvas.add(new JLabel("Hello"));
     }
     
     public void setUsers(String[] users) {
@@ -84,6 +82,8 @@ public class Canvas extends JFrame {
         menuBar.add(getModeMenu());
         menuBar.add(getColorsMenu());
         menuBar.add(getSlider());
+        menuBar.add(Box.createHorizontalGlue());
+        menuBar.add(getCurrentUserBoard());
         menuBar.add(Box.createHorizontalGlue());
         this.setJMenuBar(menuBar);
     }
@@ -266,6 +266,13 @@ public class Canvas extends JFrame {
         slider.setVisible(true);
         
         return slider;
+    }
+    
+    private JLabel getCurrentUserBoard() {
+        String user = client.getUsername();
+        String board = client.getCurrentBoardName();
+        
+        return new JLabel("Hi, " + user + ". This board is: " + board);
     }
     class MyCanvas extends JPanel {
 

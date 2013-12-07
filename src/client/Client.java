@@ -280,12 +280,20 @@ public class Client {
         this.currentBoardName = currentBoardName;
     }
     
+    public String getCurrentBoardName() {
+        return currentBoardName;
+    }
+    
     public void setBoards(String[] boards) {
         this.boards = boards;
     }
     
     public String[] getBoards() {
         return boards;
+    }
+    
+    public String getUsername() {
+        return username;
     }
     
     /*
