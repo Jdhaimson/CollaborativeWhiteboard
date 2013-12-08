@@ -1,19 +1,21 @@
 package server;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import Command.Command;
 
 public class Board {
     // image where the user's drawing is stored
-    private LinkedList<Command> commands = new LinkedList<Command>();
-    private String[] users;
+    private List<Command> commands = new LinkedList<Command>();
+    private List<String> users = new LinkedList<String>();
     
     public Board() {
-        users = new String[0];
+    	
     }
     
-    public LinkedList<Command> getCommands() {
+    public List<Command> getCommands() {
         return commands;
     }
     
@@ -22,40 +24,26 @@ public class Board {
     }
     
     public void deleteUser(String username) {
-        int newUserNumber = users.length;
-        for (String user : users) {
+        Iterator<String> it = users.iterator();
+        String user;
+        while(it.hasNext()) {
+        	user = (String) it.next();
             if (user.equals(username)) {
-                newUserNumber--;
+                it.remove();
             }
         }
-        String[] newUsers = new String[newUserNumber];
-        int count = 0;
-        for (String user : users) {
-            if (!user.equals(username)) {
-                newUsers[count] = user;
-                count++;
-            }
-        }
-        users = newUsers;
     }
     
     public void addUser(String username) {
-        String[] newUsers = new String[users.length+1];
-        for (int i=0; i<users.length; i++) {
-            newUsers[i]=users[i];
-        }
-        newUsers[users.length] = username;
-        users = newUsers;
+        users.add(username);
     }
     
     public boolean checkUsername(String username) {
-        boolean unique = true;
-        for (String user : users) {
-            if (user.equals(username)) {
-                unique = false;
-            }
-        }
-        return unique;
+        return users.contains(username);
+    }
+    
+    public String[] getUsers() {
+        return (String[]) users.toArray();
     }
 
 }

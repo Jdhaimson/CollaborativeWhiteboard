@@ -229,11 +229,11 @@ public class Canvas extends JFrame {
         
         JMenu colors = new JMenu("Paint Color");
         
-        JColorChooser chooser = new JColorChooser(Color.BLACK);
+        JColorChooser chooser = new JColorChooser(client.getCurrentColor());
         colors.add(chooser);
         chooser.getSelectionModel().addChangeListener(new ColorChangeListener(colors));
         chooser.setPreviewPanel(new JPanel());
-        colors.setBorder(BorderFactory.createLineBorder(Color.BLACK,2));
+        colors.setBorder(BorderFactory.createLineBorder(client.getCurrentColor(),2));
         
         //remove panels
         AbstractColorChooserPanel[] panels = chooser.getChooserPanels();
@@ -267,7 +267,6 @@ public class Canvas extends JFrame {
         slider.setMinorTickSpacing(2);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        //slider.setSize(50, 1000);
         slider.setVisible(true);
         
         return slider;

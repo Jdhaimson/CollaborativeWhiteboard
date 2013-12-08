@@ -16,15 +16,10 @@ public class Command {
      * @param commandString: the string in the format "draw boardName command arg1 arg2 arg3..."
      * @return a Command object with the command and the arguments
      */
-    public Command(String commandString) {
-        String[] elements = commandString.split(" ");
-        String[] arguments = new String[elements.length-3];
-        for (int i=3; i<elements.length;i++) {
-            arguments[i-1] = elements[i];
-        }
-        this.command = elements[2];
+    public Command(String boardName, String command, String[] arguments) {
+        this.boardName = boardName;
+        this.command = command;
         this.arguments = arguments;
-        this.boardName = elements[1];
     }
     
     /**
