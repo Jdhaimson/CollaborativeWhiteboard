@@ -284,6 +284,10 @@ public class Client {
         this.currentBoardName = currentBoardName;
     }
     
+    public String getCurrentBoardName() {
+        return currentBoardName;
+    }
+    
     public void setBoards(String[] boards) {
         this.boards = boards;
     }
@@ -294,6 +298,10 @@ public class Client {
     
     public Canvas getCanvas() {
         return canvas;
+    }
+    
+    public String getUsername() {
+        return username;
     }
     
     /*
