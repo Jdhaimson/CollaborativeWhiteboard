@@ -20,6 +20,7 @@ public class Command {
         this.boardName = boardName;
         this.command = command;
         this.arguments = arguments;
+
     }
     
     /**

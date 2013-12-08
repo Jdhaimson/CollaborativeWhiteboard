@@ -133,8 +133,13 @@ public class ServerProtocol implements Runnable {
             String userName = tokens[1];
             String oldBoardName = tokens[2];
             String newBoardName = tokens[3];
+            String newLine = System.getProperty("line.separator");
             List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
-        	return "switch " + userName + " " + oldBoardName + " " + newBoardName + " \n" + commands.toString();
+        	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
+        	for (Command command: commands) {
+        	    str += command.toString();
+        	}
+        	return str;
         } // Exit 
         else if (tokens[0].equals("exit")) {
             String username = tokens[1];
