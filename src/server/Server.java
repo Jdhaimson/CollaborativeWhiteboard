@@ -131,7 +131,6 @@ public class Server {
         boards.get(oldBoardName).deleteUser(username);
         boards.get(newBoardName).addUser(username);
         return boards.get(newBoardName).getCommands();
-
     }
     
     /**
