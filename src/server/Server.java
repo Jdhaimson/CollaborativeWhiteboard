@@ -41,25 +41,31 @@ public class Server {
             // block until a client connects
             Socket socket = serverSocket.accept();
             clients.add(socket);
-            
+
             // create new thread for each connection
-            new Thread(new ServerProtocol(socket, this)).start();           
+            new Thread(new ServerProtocol(socket, this)).start();
         }
     }
     
     /**
      * Iterates through all the sockets and sends the command to each
-     * @param socket: the one socket that sent the command to the server in the first place and thus does not need to be updated
+     * 
+     * @param socket
+     *            the one socket that sent the command to the server in the
+     *            first place and thus does not need to be updated
      */
     public synchronized void updateClients(String command) {
         //TODO
     }
     
     /**
-     * Add the command on the server's queue of commands
-     * Requires valid board name
-     * @param boardName: the board to draw on
-     * @param command: the command to perform on the board
+     * Add the command on the server's queue of commands Requires valid board
+     * name
+     * 
+     * @param boardName
+     *            the board to draw on
+     * @param command
+     *            the command to perform on the board
      */
     public void updateBoard(String boardName, Command command) {
         boards.get(boardName).addCommand(command);
@@ -81,15 +87,33 @@ public class Server {
     }
     
     /**
-     * Removes the user from the old board and adds the user to the new board
-     * Updates the user's canvas to the BufferedImage of the new board
-     * @param username: the username of the user making the switch
-     * @param socket: the socket for the user, to send messages to
-     * @param oldBoardName: the name of the board the user is switching from
-     * @param newBoardName: the name of the board the user is switching to
+     * Gets the users from a board
+     * 
+     * @param boardName
+     * @return String[] of users from the board
      */
-    public void switchBoard(String username, String oldBoardName, String newBoardName) {
-        //TODO
+    public String[] getUsers(String boardName) {
+        Board board = boards.get(boardName);
+        return board.getUsers();
+    }
+    
+    /**
+     * Removes the user from the old board and adds the user to the new board.
+     * 
+     * @param username
+     *            the username of the user making the switch
+     * @param oldBoardName
+     *            the name of the board the user is switching from
+     * @param newBoardName
+     *            the name of the board the user is switching to
+     * @return
+     *          List of Commands of the new Board the user is switching to           
+     */
+    public List<Command> switchBoard(String username, String oldBoardName, String newBoardName) {
+        boards.get(oldBoardName).deleteUser(username);
+        boards.get(newBoardName).addUser(username);
+        return boards.get(newBoardName).getCommands();
+
     }
     
     /**

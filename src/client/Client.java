@@ -220,9 +220,13 @@ public class Client {
     public void setupCanvas(String username, String boardName) {
         this.username = username;
         this.currentBoardName = boardName;
-        frame = new JFrame("Freehand Canvas");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+        makeNewCanvas();
+    }
+    
+    /**
+     * Gives this client a blank, new Canvas
+     */
+    public void makeNewCanvas() {
         canvas = new Canvas(800, 600, this);
     }
     
@@ -235,11 +239,14 @@ public class Client {
     public void switchBoard(String newBoardName) {
         //TODO
     }
-    
+
     /**
-     * Checks that the board name hasn't already been taken and if it hasn't, creates a new board on the server and names it with the given name
-     * @param newBoardName: the name to name the new board with
-     * @return: true if the board creation is successful, false if not
+     * Checks that the board name hasn't already been taken and if it hasn't,
+     * creates a new board on the server and names it with the given name
+     * 
+     * @param newBoardName
+     *            the name to name the new board with
+     * @return true if the board creation is successful, false if not
      */
     public boolean newBoard(String newBoardName) { 
         //TODO

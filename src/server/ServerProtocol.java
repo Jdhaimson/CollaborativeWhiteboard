@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 
 import Command.Command;
@@ -102,7 +103,7 @@ public class ServerProtocol implements Runnable {
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
      * Get Users = "users boardName"
      * Get boards = "boards"
-     * Check Users = "check username"
+     * Check Users = "check boardName username"
      * 
      * @param input message from client
      * @return message to client
@@ -120,16 +121,49 @@ public class ServerProtocol implements Runnable {
         
         String[] tokens = input.split(" ");
         
+        // Get Boards
         if (tokens[0].equals("boards")) {
         	return "boards " + server.getBoards();
-        } else if (tokens[0].equals("new")) {
+        } //New Board
+        else if (tokens[0].equals("new")) {
         	String boardName = tokens[1];
         	return "new " + boardName + " " + String.valueOf(server.newBoard(boardName));
-        } else if (tokens[0].equals("switch")) {
-        	//server.switchBoard(username, oldBoardName, newBoardName);
+        } // Switch Board
+        else if (tokens[0].equals("switch")) {
+            String userName = tokens[1];
+            String oldBoardName = tokens[2];
+            String newBoardName = tokens[3];
+            List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
+        	return "switch " + userName + " " + oldBoardName + " " + newBoardName + " \n" + commands.toString();
+        } // Exit 
+        else if (tokens[0].equals("exit")) {
+            String username = tokens[1];
+            server.exit(username);
+            return "close connection: " + username;
+        } // Draw Command 
+        else if (tokens[0].equals("draw")) {
+            String boardName = tokens[1];
+            String methodName = tokens[2];
+            String[] params = new String[tokens.length-3];
+            for (int i=3; i<tokens.length;i++) {
+                params[i-3] = tokens[i];
+            }
+            Command command = new Command(boardName, methodName, params);
+            server.updateBoard(boardName, command);
+            return "draw";
+        } // Check User
+        else if (tokens[0].equals("check")) {
+            String boardName = tokens[1];
+            String username = tokens[2];
+            return "checked " + boardName + " " + username + " " + String.valueOf(server.checkUsers(username, boardName));
+        } // Get Users
+        else if (tokens[0].equals("users")) {
+            String boardName = tokens[1];
+            return Arrays.toString(server.getUsers(boardName));
         }
-
         
+
+
         // Should never get here--make sure to return in each of the valid cases above.
         throw new UnsupportedOperationException();
     }
