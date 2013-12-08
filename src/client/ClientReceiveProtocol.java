@@ -61,7 +61,7 @@ public class ClientReceiveProtocol implements Runnable {
      * Update Available Boards = "boards board1 board2 board3"
      * Draw = "draw boardName command param1 param2 param3"
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-     * Check Users = "check username boolean"
+     * Check Users = "check username boardName boolean"
      * New Board = "new boardName boolean"
      * 
      * @param input message from server
@@ -71,8 +71,8 @@ public class ClientReceiveProtocol implements Runnable {
     private void handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9]+";
-    	String regex = "(boards ("+nameReg+" ?)+)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+")|(testHello)";
-        
+    	String regex = "(boards ("+nameReg+" ?)+)|(check ("+nameReg+" "+nameReg+" (true|false)))|(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	
     	// make sure it's a valid input
         if (input.matches(regex)) {
 
@@ -82,11 +82,21 @@ public class ClientReceiveProtocol implements Runnable {
             	try {
 					client.setBoards(client.parseBoardsFromServerResponse(input));
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+            }  else if (tokens[0].equals("new")) {
+                try {
+                    client.parseNewBoardFromServerResponse(input);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (tokens[0].equals("check")) {
+                try {
+                    client.parseNewUserFromServerResponse(input);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
-
             }    
         }
    

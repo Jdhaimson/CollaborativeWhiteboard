@@ -50,10 +50,10 @@ public class CommandTest {
     public void invokeCommandTest() {
         try {
             Client clientInvoked = new Client();
-            clientInvoked.setupCanvas("username", "board2");
+            clientInvoked.setupCanvas();
             lineSegmentObject.invokeCommand(clientInvoked.getCanvas());
             Client clientDrawn = new Client();
-            clientDrawn.setupCanvas("username", "board2");
+            clientDrawn.setupCanvas();
             clientDrawn.getCanvas().drawLineSegment(50, 50, 60, 60, 0, 10);
             BufferedImage imageInvoked = clientInvoked.getCanvas().getDrawingBuffer();
             BufferedImage imageDrawn = clientDrawn.getCanvas().getDrawingBuffer();

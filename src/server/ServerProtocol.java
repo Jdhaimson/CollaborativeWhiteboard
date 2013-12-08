@@ -22,7 +22,7 @@ public class ServerProtocol implements Runnable {
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
      * Get Users = "users boardName"
      * Get boards = "boards"
-     * Check Users = "check username"
+     * Check Users = "check username boardName"
      * 
      * 
      * Sends: 
@@ -31,7 +31,7 @@ public class ServerProtocol implements Runnable {
      * Update Available Boards = "boards board1 board2 board3"
      * Draw = "draw boardName command param1 param2 param3"
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-     * Check Users = "check username boolean"
+     * Check Users = "check username boardName boolean"
      * New Board = "new boardName boolean"
      */
     
@@ -50,6 +50,7 @@ public class ServerProtocol implements Runnable {
     public void run() {
         // handle the client
         try {
+            
             handleConnection(socket);
         } catch (IOException e) {
             e.printStackTrace(); // but don't terminate
@@ -69,15 +70,17 @@ public class ServerProtocol implements Runnable {
      * @throws IOException if connection has an error or terminates unexpectedly
      */
     private void handleConnection(Socket socket) throws IOException {
+
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 try {
+                    
                 	System.out.println("Handle Request: " + line);
+                    
 	            	String output = handleRequest(line);
-	            	
+	            	System.out.println("output: "+output);
 	            	if(output != null) {
 	            		out.println(output);
 	            	}
@@ -104,7 +107,7 @@ public class ServerProtocol implements Runnable {
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
      * Get Users = "users boardName"
      * Get boards = "boards"
-     * Check Users = "check boardName username"
+     * Check Users = "check username boardName"
      * 
      * @param input message from client
      * @return message to client
@@ -126,7 +129,7 @@ public class ServerProtocol implements Runnable {
         	System.out.println("Invalid input");
             return null;
         }
-        
+        System.out.println(input);
         String[] tokens = input.split(" ");
         
         // Get Boards
@@ -173,9 +176,11 @@ public class ServerProtocol implements Runnable {
             return "draw";
         } // Check User
         else if (tokens[0].equals("check")) {
-            String boardName = tokens[1];
-            String username = tokens[2];
-            return "checked " + boardName + " " + username + " " + String.valueOf(server.checkUsers(username, boardName));
+            
+            String boardName = tokens[2];
+            String username = tokens[1];
+            return "check " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
+            //return "check jessmand test true";
         } // Get Users
         else if (tokens[0].equals("users")) {
             String boardName = tokens[1];
@@ -244,14 +249,6 @@ public class ServerProtocol implements Runnable {
      * Format of response: "boards board1 board2 board3"
      */
     public void getBoards() {
-        //TODO
-    }
-    
-    /**
-     * Calls server.checkUsers and returns the result to the client
-     * format of return: "check username boolean"
-     */
-    public void checkUsers() {
         //TODO
     }
     

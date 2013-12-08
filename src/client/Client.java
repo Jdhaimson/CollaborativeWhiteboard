@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,6 +58,9 @@ public class Client {
     // used for comm
     private String[] boards = {};
     private boolean boardsUpdated;
+    private Hashtable<String, Boolean> newBoardMade = new Hashtable<String, Boolean>();
+    private Hashtable<String, Boolean> newBoardSuccessful = new Hashtable<String, Boolean>();
+    private boolean userCheckMade;
     
     //the socket with which the user connects to the client
     private Socket socket;
@@ -102,12 +106,10 @@ public class Client {
 
         // Get boards from server and add to data model
         // TODO: Handle case where there are no boards on server
-        String[] tempBoards;
 		try {
-			tempBoards = this.getBoards();
-			
-			for (int i=0; i<tempBoards.length;i++) {
-	            boardListModel.addElement(tempBoards[i]);
+		    getBoards();
+			for (int i=0; i<boards.length;i++) {
+	            boardListModel.addElement(boards[i]);
 	        }
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -157,12 +159,17 @@ public class Client {
                     JOptionPane.showMessageDialog(dialog, "Please enter a username.", "Try again", JOptionPane.ERROR_MESSAGE);
                 } else if (boardList.isSelectionEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "Please select a board.", "Try again", JOptionPane.ERROR_MESSAGE);
-                } else if (createUser(username.getText(), boardList.getSelectedValue())) {
-                    dialog.setVisible(false);
-                    setupCanvas(username.getText(), boardList.getSelectedValue());
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
-                }
+                } else
+                    try {
+                        if (createUser(username.getText(), boardList.getSelectedValue())) {
+                            dialog.setVisible(false);
+                            setupCanvas();
+                        } else {
+                            JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
             }
         });
         
@@ -206,7 +213,7 @@ public class Client {
          * Called when execute is called on the worker
          */
         @Override
-        protected Boolean doInBackground() throws Exception {
+        protected Boolean doInBackground() throws Exception {  
             return newBoard(newBoardName);
         }   
         
@@ -217,13 +224,20 @@ public class Client {
         protected void done() {
             try {
                 if (get()) {
-                    boardListModel.addElement(newBoardName);
+                    getBoards();
+                    boardListModel.removeAllElements();
+                    for (int i=0; i<boards.length;i++) {
+                        boardListModel.addElement(boards[i]);
+                    }
                     newBoard.setText("");
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (HeadlessException | InterruptedException
                     | ExecutionException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -234,14 +248,38 @@ public class Client {
      * @param username: the user's choice of username
      * @return: true if username creation is successful, false if not
      */
-    public boolean createUser(String username, String boardName) {
-        //TODO
-        return true;
+    public boolean createUser(String username, String boardName) throws Exception {
+        makeRequest("check "+username+" "+boardName).join();
+        userCheckMade = false;
+        boolean timeout = false;
+        int timeoutCounter = 0;
+        int maxAttempts = 100;
+        int timeoutDelay = 10;
+        while(!userCheckMade && !timeout) {
+            timeoutCounter++;
+            if (timeoutCounter >= maxAttempts) {
+                timeout = true;
+                System.out.println("timeout on new user "+username);
+            }
+            Thread.sleep(timeoutDelay);
+        }
+        return (this.username != null && currentBoardName != null);
     }
     
-    public void setupCanvas(String username, String boardName) {
-        this.username = username;
-        this.currentBoardName = boardName;
+    public void parseNewUserFromServerResponse(String response) throws Exception {
+        String[] elements = response.split(" ");
+        if(elements[0]!="check"&& elements.length!=4) {
+            throw new Exception("Server returned unexpected result: " + response);
+        }
+        
+        boolean created = Boolean.valueOf(elements[3]);
+        if (created) {
+            this.username = elements[1];
+            this.currentBoardName = elements[2];
+        }
+    }
+    
+    public void setupCanvas() {
         frame = new JFrame("Freehand Canvas");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -274,9 +312,38 @@ public class Client {
      *            the name to name the new board with
      * @return true if the board creation is successful, false if not
      */
-    public boolean newBoard(String newBoardName) { 
-        //TODO
-        return true;
+    public boolean newBoard(String newBoardName) throws Exception {
+        if (newBoardMade.containsKey(newBoardName)) return false;
+        newBoardMade.put(newBoardName, false);
+        newBoardSuccessful.put(newBoardName, true);
+        makeRequest("new "+newBoardName).join();
+        boolean timeout = false;
+        int timeoutCounter = 0;
+        int maxAttempts = 100;
+        int timeoutDelay = 10;
+        while(!newBoardMade.get(newBoardName) && !timeout) {
+            timeoutCounter++;
+            if (timeoutCounter >= maxAttempts) {
+                timeout = true;
+                System.out.println("timeout on new board "+newBoardName);
+            }
+            Thread.sleep(timeoutDelay);
+        }
+        boolean successful = newBoardSuccessful.get(newBoardName);
+        newBoardMade.remove(newBoardName);
+        newBoardSuccessful.remove(newBoardName);
+        return successful;
+    }
+    
+    public void parseNewBoardFromServerResponse(String response) throws Exception {
+        if(!response.contains("new")) {
+            throw new Exception("Server returned unexpected result: " + response);
+        }
+        String[] elements = response.split(" ");
+        String boardName = elements[1];
+        boolean successful = Boolean.valueOf(elements[2]);
+        newBoardSuccessful.put(boardName, successful);
+        newBoardMade.put(boardName, true);
     }
     
     /**
@@ -374,7 +441,7 @@ public class Client {
     public String[] parseBoardsFromServerResponse(String response) throws Exception {
     	
         if(!response.contains("boards")) {
-        	throw new Exception("Server returned unexpected result: " + boards);
+        	throw new Exception("Server returned unexpected result: " + response);
         }
         
         String[] boardsListStrings = response.split(" ");
@@ -388,6 +455,8 @@ public class Client {
     	boards = newBoards;
     	boardsUpdated = true;
     }
+    
+   
     
     
     public String getCurrentBoardName() {

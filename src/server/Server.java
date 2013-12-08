@@ -150,7 +150,9 @@ public class Server {
      * @param boardName: the board they have chosen to enter
      */
     public synchronized void enter(String username, String boardName) {
-        boards.get(boardName).addUser(username);
+        System.out.println(boardName);
+        Board board = boards.get(boardName);
+        board.addUser(username);
     }
     
     /**
@@ -178,13 +180,15 @@ public class Server {
      * @param boardName: the board the user wants to enter
      * @return: whether or not the user entered successfully
      */
-    public boolean checkUsers(String username, String boardName) {
+    public boolean checkUser(String username, String boardName) {
         boolean unique = true;
+        //System.out.println("enter: "+username);
         for (String board : boards.keySet()) {
             if (!boards.get(board).checkUsername(username)) {
                 unique = false;
             }
         }
+        
         if (unique == true) {
             enter(username, boardName);
             return true;
