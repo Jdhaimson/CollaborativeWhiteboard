@@ -167,7 +167,13 @@ public class Canvas extends JFrame {
         boards.addSeparator();
         
         //List of Boards
-        String[] listBoards = client.getBoards();
+        String[] listBoards = {};
+		try {
+			listBoards = client.getBoards();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
         for (String board: listBoards) {
             boards.add(new JMenuItem(board));
         }
@@ -184,14 +190,17 @@ public class Canvas extends JFrame {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                client.updateBoards();
-                for (int i=boards.getItemCount()-1; i>1; i--)
-                {
-                    boards.remove(i);
-                }
-                for (String board: client.getBoards()) {
-                    boards.add(new JMenuItem(board));
-                }
+            	for (int i=boards.getItemCount()-1; i>1; i--) {
+            		boards.remove(i);
+            	}
+                try {
+					for (String board: client.getBoards()) {
+					    boards.add(new JMenuItem(board));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
             }
         });
         
@@ -221,11 +230,11 @@ public class Canvas extends JFrame {
         
         JMenu colors = new JMenu("Paint Color");
         
-        JColorChooser chooser = new JColorChooser(Color.BLACK);
+        JColorChooser chooser = new JColorChooser(client.getCurrentColor());
         colors.add(chooser);
         chooser.getSelectionModel().addChangeListener(new ColorChangeListener(colors));
         chooser.setPreviewPanel(new JPanel());
-        colors.setBorder(BorderFactory.createLineBorder(Color.BLACK,2));
+        colors.setBorder(BorderFactory.createLineBorder(client.getCurrentColor(),2));
         
         //remove panels
         AbstractColorChooserPanel[] panels = chooser.getChooserPanels();
@@ -259,7 +268,6 @@ public class Canvas extends JFrame {
         slider.setMinorTickSpacing(2);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        //slider.setSize(50, 1000);
         slider.setVisible(true);
         
         return slider;

@@ -7,8 +7,17 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -26,6 +35,7 @@ import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 
+import server.ServerProtocol;
 import Command.Command;
 
 public class Client {
@@ -43,16 +53,29 @@ public class Client {
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
     private float currentWidth = 10;
+    
+    // used for comm
+    private String[] boards = {};
+    private boolean boardsUpdated;
+    
     //the socket with which the user connects to the client
     private Socket socket;
-    //the list of boards the user has to choose from
-    private String[] boards;
+    BufferedReader in;
+    PrintWriter out;
+    ClientReceiveProtocol receiveProtocol;
+    Thread receiveThread;
+    
     private JDialog dialog;
     private DefaultListModel<String> boardListModel;
     private JTextField newBoard;
     
-    public Client() {
-        updateBoards();
+    public Client() throws UnknownHostException, IOException {
+        socket = new Socket("localhost", 4444);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream(), true);
+        receiveProtocol = new ClientReceiveProtocol(in, this);
+        receiveThread = new Thread(receiveProtocol);
+        receiveThread.start();
         startDialog();
         
     }
@@ -76,10 +99,20 @@ public class Client {
         hUsername.addComponent(usernameLabel).addComponent(username);
         
         boardListModel = new DefaultListModel<String>();
-        String[] tempBoards = boards;
-        for (int i=0; i<tempBoards.length;i++) {
-            boardListModel.addElement(tempBoards[i]);
-        }
+
+        // Get boards from server and add to data model
+        // TODO: Handle case where there are no boards on server
+        String[] tempBoards;
+		try {
+			tempBoards = this.getBoards();
+			
+			for (int i=0; i<tempBoards.length;i++) {
+	            boardListModel.addElement(tempBoards[i]);
+	        }
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
         final JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
         boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         boardList.setLayoutOrientation(JList.VERTICAL);
@@ -140,6 +173,25 @@ public class Client {
                 
             }
         });
+        
+        // close socket on exit
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                	// kill receiving thread and wait for it to close out
+					receiveProtocol.kill();
+					socket.shutdownInput();
+					socket.shutdownOutput();
+					
+                	socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+            }
+        });
     }
     
     class NewBoardWorker extends SwingWorker<Boolean, Object> {
@@ -194,6 +246,13 @@ public class Client {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
         frame.setResizable(false);
+        makeNewCanvas();
+    }
+    
+    /**
+     * Gives this client a blank, new Canvas
+     */
+    public void makeNewCanvas() {
         canvas = new Canvas(800, 600, this);
     }
     
@@ -206,11 +265,14 @@ public class Client {
     public void switchBoard(String newBoardName) {
         //TODO
     }
-    
+
     /**
-     * Checks that the board name hasn't already been taken and if it hasn't, creates a new board on the server and names it with the given name
-     * @param newBoardName: the name to name the new board with
-     * @return: true if the board creation is successful, false if not
+     * Checks that the board name hasn't already been taken and if it hasn't,
+     * creates a new board on the server and names it with the given name
+     * 
+     * @param newBoardName
+     *            the name to name the new board with
+     * @return true if the board creation is successful, false if not
      */
     public boolean newBoard(String newBoardName) { 
         //TODO
@@ -234,14 +296,6 @@ public class Client {
     public String[] getUsers() {
         //TODO
         return new String[] {"Jessica", "Juan", "Josh"};
-    }
-    
-    /**
-     * Gets all of the current boards from the server
-     */
-    public void updateBoards() {
-        //TODO
-        this.boards = new String[] {"Board 1", "Board 2", "Board 3"};
     }
     
     /**
@@ -284,16 +338,69 @@ public class Client {
         this.currentBoardName = currentBoardName;
     }
     
+
+    public String[] getBoards() throws Exception {
+    	
+    	boardsUpdated = false;
+    	// make request for board update and wait for it to finish
+    	makeRequest("boards").join();
+    	
+    	// Wait for response from server
+    	boolean timeout = false;
+    	int timeoutCounter = 0;
+    	int maxAttempts = 100;
+    	int timeoutDelay = 10;
+    	while(!boardsUpdated && !timeout) {
+    		timeoutCounter++;
+    		if (timeoutCounter >= maxAttempts) {
+    			timeout = true;
+    			System.out.println("timeout on boards update");
+    		}
+    		Thread.sleep(timeoutDelay);
+    	}
+ 
+    	// boards by now will have either been updated, or if it times out
+    	// then it will return what it last had
+    	return this.boards;
+ 
+    }
+    
+    /**
+     * 
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    public String[] parseBoardsFromServerResponse(String response) throws Exception {
+    	
+        if(!response.contains("boards")) {
+        	throw new Exception("Server returned unexpected result: " + boards);
+        }
+        
+        String[] boardsListStrings = response.split(" ");
+        return Arrays.copyOfRange(boardsListStrings, 1, boardsListStrings.length);
+    }
+    
+    /**
+     * Used to set boards
+     */
+    public void setBoards(String[] newBoards) {
+    	boards = newBoards;
+    	boardsUpdated = true;
+    }
+    
+    
     public String getCurrentBoardName() {
         return currentBoardName;
     }
     
-    public void setBoards(String[] boards) {
-        this.boards = boards;
-    }
-    
-    public String[] getBoards() {
-        return boards;
+    // Make request in new thread
+    public Thread makeRequest(String request) throws IOException {
+    	
+    	Thread requestThread = new Thread(new ClientSendProtocol(out, request));
+        requestThread.start();
+        
+        return requestThread;
     }
     
     public Canvas getCanvas() {
@@ -311,7 +418,15 @@ public class Client {
         // set up the UI (on the event-handling thread)
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Client client = new Client();
+                try {
+					Client client = new Client();
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         });
     }

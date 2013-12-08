@@ -57,5 +57,9 @@ public class Board {
         }
         return unique;
     }
+    
+    public String[] getUsers() {
+        return users;
+    }
 
 }
