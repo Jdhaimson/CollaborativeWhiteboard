@@ -111,7 +111,7 @@ public class ServerProtocol implements Runnable {
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9]+";
-    	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+")";
+    	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+")|(testHello)";
         
         if ( ! input.matches(regex)) {
             // invalid input
@@ -127,6 +127,9 @@ public class ServerProtocol implements Runnable {
         	return "new " + boardName + " " + String.valueOf(server.newBoard(boardName));
         } else if (tokens[0].equals("switch")) {
         	//server.switchBoard(username, oldBoardName, newBoardName);
+        } else if (tokens[0].equals("testHello")) {
+        	server.sendHello();
+        	return "";
         }
 
         

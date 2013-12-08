@@ -36,6 +36,7 @@ import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 
+import server.ServerProtocol;
 import Command.Command;
 
 public class Client {
@@ -53,10 +54,17 @@ public class Client {
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
     private float currentWidth = 10;
+    
+    // used for comm
+    private String[] boards = {};
+    private boolean boardsUpdated;
+    
     //the socket with which the user connects to the client
     private Socket socket;
-    // Thread pool
-    private ExecutorService threadPool = Executors.newCachedThreadPool();
+    BufferedReader in;
+    PrintWriter out;
+    ClientReceiveProtocol receiveProtocol;
+    Thread receiveThread;
     
     private JDialog dialog;
     private DefaultListModel<String> boardListModel;
@@ -64,6 +72,11 @@ public class Client {
     
     public Client() throws UnknownHostException, IOException {
         socket = new Socket("localhost", 4444);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream(), true);
+        receiveProtocol = new ClientReceiveProtocol(in, this);
+        receiveThread = new Thread(receiveProtocol);
+        receiveThread.start();
         
         dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
@@ -164,7 +177,12 @@ public class Client {
             public void run()
             {
                 try {
-					socket.close();
+                	// kill receiving thread and wait for it to close out
+					receiveProtocol.kill();
+					socket.shutdownInput();
+					socket.shutdownOutput();
+					
+                	socket.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -307,29 +325,67 @@ public class Client {
     
 
     public String[] getBoards() throws Exception {
-        String boards = makeRequest("boards");
-        if(!boards.contains("boards")) {
+    	
+    	boardsUpdated = false;
+    	// make request for board update and wait for it to finish
+    	makeRequest("boards").join();
+    	
+    	// Wait for response from server
+    	boolean timeout = false;
+    	int timeoutCounter = 0;
+    	int maxAttempts = 100;
+    	int timeoutDelay = 10;
+    	while(!boardsUpdated && !timeout) {
+    		timeoutCounter++;
+    		if (timeoutCounter >= maxAttempts) {
+    			timeout = true;
+    			System.out.println("timeout on boards update");
+    		}
+    		Thread.sleep(timeoutDelay);
+    	}
+ 
+    	// boards by now will have either been updated, or if it times out
+    	// then it will return what it last had
+    	return this.boards;
+ 
+    }
+    
+    /**
+     * 
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    public String[] parseBoardsFromServerResponse(String response) throws Exception {
+    	
+        if(!response.contains("boards")) {
         	throw new Exception("Server returned unexpected result: " + boards);
         }
         
-        String[] boardsListStrings = boards.split(" ");
+        String[] boardsListStrings = response.split(" ");
         return Arrays.copyOfRange(boardsListStrings, 1, boardsListStrings.length);
     }
+    
+    /**
+     * Used to set boards
+     */
+    public void setBoards(String[] newBoards) {
+    	boards = newBoards;
+    	boardsUpdated = true;
+    }
+    
     
     public String getCurrentBoardName() {
         return currentBoardName;
     }
     
-
-    public String makeRequest(String request) throws IOException {
-    	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-        out.println(request);        
-        // All responses are only one line
-        String response = in.readLine();
+    // Make request in new thread
+    public Thread makeRequest(String request) throws IOException {
+    	
+    	Thread requestThread = new Thread(new ClientSendProtocol(out, request));
+        requestThread.start();
         
-        return response;
+        return requestThread;
     }
     
     public String getUsername() {

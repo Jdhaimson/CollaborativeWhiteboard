@@ -1,6 +1,7 @@
 package server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
@@ -78,6 +79,23 @@ public class Server {
             boards.put(boardName, new Board());
             return true;
         }
+    }
+    
+    /**
+     * Test method
+     */
+    public void sendHello() {
+    	for (Socket client: clients) {
+    		try {
+    			if (!client.isClosed()) {
+    				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+					out.println("Hello world!");
+    			}
+    		} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
     }
     
     /**

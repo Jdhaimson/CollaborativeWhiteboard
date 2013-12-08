@@ -1,14 +1,16 @@
 package client;
 
-import java.net.Socket;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class ClientReceiveProtocol implements Runnable {
     
-    private final Socket socket;
+    private final BufferedReader in;
     private final Client client;
+    private boolean isRunning = true;
     
-    public ClientReceiveProtocol(Socket socket, Client client) {
-        this.socket = socket;
+    public ClientReceiveProtocol(BufferedReader in, Client client) {
+        this.in= in;
         this.client = client;
     }
     
@@ -17,7 +19,79 @@ public class ClientReceiveProtocol implements Runnable {
      */
     @Override
     public void run() {
+    	// provide a way to kill thread
+    	while(isRunning) {
+	    	//handle the client
+		    try {
+		        handleConnection(in);
+		    } catch (IOException e) {
+		        e.printStackTrace(); // but don't terminate
+		    }
+    	}
     }
+	    
+    
+    /**
+     * Handle connection to server. Returns when client disconnects.
+     * 
+     * @param socket socket where the client is connected
+     * @throws IOException if connection has an error or terminates unexpectedly
+     */
+    private void handleConnection(BufferedReader in) throws IOException {
+        
+        try {
+            for (String line = in.readLine(); line != null; line = in.readLine()) {
+                try {
+                	System.out.println("Handle Request: " + line);
+	            	handleRequest(line);
+                } catch (IllegalArgumentException e) {
+	                e.printStackTrace();   
+                }                
+            }
+        } finally {
+            in.close();
+        }
+    }
+    
+    /**
+     * Handler for server input, performing requested operations and returning an output message.
+     * Receives:
+     * 
+     * Update Users = "users boardName user1 user2 user3..."
+     * Update Available Boards = "boards board1 board2 board3"
+     * Draw = "draw boardName command param1 param2 param3"
+     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
+     * Check Users = "check username boolean"
+     * New Board = "new boardName boolean"
+     * 
+     * @param input message from server
+     * @return message to client
+     * @throws IOException 
+     */
+    private void handleRequest(String input) throws IOException, IllegalArgumentException {
+        
+    	String nameReg = "[a-zA-Z0-9]+";
+    	String regex = "(boards ("+nameReg+" ?)+)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+")|(testHello)";
+        
+    	// make sure it's a valid input
+        if (input.matches(regex)) {
+
+            String[] tokens = input.split(" ");
+            
+            if (tokens[0].equals("boards")) {
+            	try {
+					client.setBoards(client.parseBoardsFromServerResponse(input));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            } else {
+
+            }    
+        }
+   
+    }
+ 
     
     /**
      * Checks that the board is the correct one, parses the message into an array of users and calls client.setCanvasUsers
@@ -40,4 +114,12 @@ public class ClientReceiveProtocol implements Runnable {
     public void commandCanvas(String commandMessage) {
     }
 
+    /**
+     * Used to kill thread from outside
+     */
+    public void kill() {
+    	isRunning = false;
+    	// TODO: Fix exception thrown on window close
+    }
+    
 }

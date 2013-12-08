@@ -7,13 +7,13 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
-public class ClientSendProtocol implements Callable {
+public class ClientSendProtocol implements Runnable {
     
-    private final Socket socket;
+    private final PrintWriter out;
     private final String message;
     
-    public ClientSendProtocol(Socket socket, String message) {
-        this.socket = socket;
+    public ClientSendProtocol(PrintWriter out, String message) {
+        this.out = out;
         this.message = message;
     }
     
@@ -22,12 +22,8 @@ public class ClientSendProtocol implements Callable {
      * @throws IOException 
      */
     @Override
-    public String call() throws IOException {
-    	BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        out.write(message);
-        // All responses are one line
-        return in.readLine();
+    public void run() {
+		out.println(message);
     }
 
 }
