@@ -137,7 +137,7 @@ public class ServerProtocol implements Runnable {
             List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
         	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
         	for (Command command: commands) {
-        	    str += command.toString();
+        	    str += command.toString() + newLine;
         	}
         	return str;
         } // Exit 
