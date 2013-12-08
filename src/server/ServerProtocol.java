@@ -97,6 +97,7 @@ public class ServerProtocol implements Runnable {
      * Receives:
      * 
      * New Board = "new boardName"
+     * Add User = "addUser username boardName"
      * Switch Board = "switch username oldBoardName newBoardName"
      * Exit = "exit username"
      * Draw = "draw boardName command param1 param2 param3"
@@ -112,10 +113,17 @@ public class ServerProtocol implements Runnable {
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9]+";
-    	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	String colorReg = "[#a-zA-Z0-9]+";
+    	String floatReg = "[0-9]*.?[0-9]+";
+    	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
+    			+ "(addUser "+nameReg+" "+nameReg+")|(exit "+nameReg+")|(users "+nameReg+")|"
+    			+ "(check "+nameReg+" "+nameReg+")|"
+    			+ "(draw "+nameReg+" "+nameReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+floatReg
+    			+" "+colorReg+" "+floatReg+")";
         
         if ( ! input.matches(regex)) {
             // invalid input
+        	System.out.println("Invalid input");
             return null;
         }
         
@@ -140,7 +148,14 @@ public class ServerProtocol implements Runnable {
         	    str += command.toString() + newLine;
         	}
         	return str;
-        } // Exit 
+        } // Add user 
+        else if (tokens[0].equals("addUser")) {
+        	String username = tokens[1];
+        	String boardName = tokens[2];
+        	server.enter(username, boardName);
+        	return "addUser " + username + " " + boardName + " true";
+        }
+        // Exit 
         else if (tokens[0].equals("exit")) {
             String username = tokens[1];
             server.exit(username);

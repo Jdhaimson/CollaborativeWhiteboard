@@ -43,7 +43,8 @@ public class Board {
     }
     
     public String[] getUsers() {
-        return (String[]) users.toArray();
+    	String[] userArray = new String[users.size()];
+        return users.toArray(userArray);
     }
 
 }
