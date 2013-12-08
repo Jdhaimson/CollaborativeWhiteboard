@@ -162,7 +162,7 @@ public class Client {
                 } else
                     try {
                         if (createUser(username.getText(), boardList.getSelectedValue())) {
-                            dialog.setVisible(false);
+                            dialog.dispose();
                             setupCanvas();
                         } else {
                             JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
@@ -241,6 +241,66 @@ public class Client {
                 e.printStackTrace();
             }
         }
+    }
+    
+    public void newBoardDialog() {
+        final JDialog newBoardDialog = new JDialog();
+        newBoardDialog.setTitle("Create New Board");
+        newBoardDialog.setResizable(false);
+        final Container newBoardDialogContainer = new Container();
+        GroupLayout layout = new GroupLayout(newBoardDialogContainer);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+        newBoardDialogContainer.setLayout(layout);
+        
+        JLabel newBoardNameLabel = new JLabel("New Board Name:");
+        final JTextField newBoardName = new JTextField(10);
+        JButton newBoardButton = new JButton("Create");
+        
+        ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.CENTER);
+        
+        SequentialGroup hEnter = layout.createSequentialGroup();
+        hEnter.addComponent(newBoardNameLabel).addComponent(newBoardName);
+        
+        hGroup.addGroup(hEnter).addComponent(newBoardButton);
+        
+        ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        SequentialGroup vAll = layout.createSequentialGroup();
+        
+        ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+        v1.addComponent(newBoardNameLabel).addComponent(newBoardName);
+
+        vAll.addGroup(v1).addComponent(newBoardButton);
+        
+        vGroup.addGroup(vAll);
+        
+        layout.setHorizontalGroup(hGroup);
+        layout.setVerticalGroup(vGroup);
+        
+        newBoardDialog.setContentPane(newBoardDialogContainer);
+        newBoardDialog.pack();
+        newBoardDialog.setVisible(true);
+        
+        newBoardButton.addActionListener(new ActionListener() {
+            public synchronized void actionPerformed(ActionEvent e) {
+                String newBoardNameString = newBoardName.getText();
+                if (newBoardNameString.equals("")) {
+                    JOptionPane.showMessageDialog(newBoardDialog, "Please enter a board name.", "Try again", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    try {
+                        boolean successful = newBoard(newBoardNameString);
+                        if (!successful) {
+                            JOptionPane.showMessageDialog(newBoardDialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            getBoards();
+                            newBoardDialog.dispose();
+                        }
+                     } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     /**

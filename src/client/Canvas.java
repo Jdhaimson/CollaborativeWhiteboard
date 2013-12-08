@@ -162,8 +162,13 @@ public class Canvas extends JFrame {
       //add List of Boards
         final JMenu boards = new JMenu("Board(s)");
 
-        //new board option
-        boards.add(new JMenuItem("New Board"));
+        JMenuItem newBoardButton = new JMenuItem("New Board");
+        boards.add(newBoardButton);
+        newBoardButton.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                client.newBoardDialog();
+            }
+        });
         boards.addSeparator();
         
         //List of Boards
