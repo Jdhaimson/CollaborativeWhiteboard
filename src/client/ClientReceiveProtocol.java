@@ -71,13 +71,12 @@ public class ClientReceiveProtocol implements Runnable {
     private void handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9]+";
-    	String regex = "(boards ("+nameReg+" ?)+)|(check ("+nameReg+" "+nameReg+" (true|false)))|(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
-    	
+    	String regex = "(users( "+nameReg+")+)|(exit "+nameReg+")|(boards( "+nameReg+")*)|(check ("+nameReg+" "+nameReg+" (true|false)))|(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	System.out.println("input: "+input);
     	// make sure it's a valid input
         if (input.matches(regex)) {
-
             String[] tokens = input.split(" ");
-            
+            System.out.println("token 0: "+tokens[0]);
             if (tokens[0].equals("boards")) {
             	try {
 					client.setBoards(client.parseBoardsFromServerResponse(input));
@@ -93,6 +92,21 @@ public class ClientReceiveProtocol implements Runnable {
             } else if (tokens[0].equals("check")) {
                 try {
                     client.parseNewUserFromServerResponse(input);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (tokens[0].equals("users")) {
+                try {
+                    if (client.checkForCorrectBoard(input.split(" ")[1])) {
+                        
+                        client.setUsers(client.parseUsersFromServerResponse(input));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (tokens[0].equals("exit")) {
+                try {
+                    client.completeExit();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

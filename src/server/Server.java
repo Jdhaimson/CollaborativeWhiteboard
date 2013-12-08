@@ -110,9 +110,19 @@ public class Server {
      * @param boardName
      * @return String[] of users from the board
      */
-    public String[] getUsers(String boardName) {
+    public String getUsers(String boardName) {
         Board board = boards.get(boardName);
-        return board.getUsers();
+        String[] users = board.getUsers();
+        StringBuilder usersString = new StringBuilder("");
+        for (String user: users) {
+            usersString.append(user + " ");
+        }
+        
+        if(usersString.length() > 0) {
+            usersString.deleteCharAt(usersString.length() - 1);
+        }
+        
+        return usersString.toString();
     }
     
     /**

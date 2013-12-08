@@ -126,10 +126,15 @@ public class Canvas extends JFrame {
     private JMenu getUsersMenu() {
         final JMenu usersMenu = new JMenu("Users");
         //List of Users
-        for (String user: client.getUsers()) {
-            JLabel label = new JLabel(user);
-            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
-            usersMenu.add(label);
+        try {
+            for (String user: client.getUsers()) {
+                JLabel label = new JLabel(user);
+                label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                usersMenu.add(label);
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         
         usersMenu.addMenuListener(new MenuListener() {
@@ -144,10 +149,15 @@ public class Canvas extends JFrame {
             @Override
             public void menuSelected(MenuEvent arg0) {
                 usersMenu.removeAll();
-                for (String user: client.getUsers()) {
-                    JLabel label = new JLabel(user);
-                    label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
-                    usersMenu.add(label);
+                try {
+                    for (String user: client.getUsers()) {
+                        JLabel label = new JLabel(user);
+                        label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                        usersMenu.add(label);
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         });

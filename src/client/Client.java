@@ -61,6 +61,9 @@ public class Client {
     private Hashtable<String, Boolean> newBoardMade = new Hashtable<String, Boolean>();
     private Hashtable<String, Boolean> newBoardSuccessful = new Hashtable<String, Boolean>();
     private boolean userCheckMade;
+    private boolean usersUpdated;
+    private String[] users = {};
+    private boolean exitComplete;
     
     //the socket with which the user connects to the client
     private Socket socket;
@@ -97,10 +100,10 @@ public class Client {
         ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         
         SequentialGroup hUsername = layout.createSequentialGroup();
-        final JTextField username = new JTextField(10);
-        username.setName("username");
+        final JTextField usernameTextField = new JTextField(10);
+        usernameTextField.setName("username");
         JLabel usernameLabel = new JLabel("Username:");
-        hUsername.addComponent(usernameLabel).addComponent(username);
+        hUsername.addComponent(usernameLabel).addComponent(usernameTextField);
         
         boardListModel = new DefaultListModel<String>();
 
@@ -137,7 +140,7 @@ public class Client {
         SequentialGroup vAll = layout.createSequentialGroup();
         
         ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v1.addComponent(usernameLabel).addComponent(username);
+        v1.addComponent(usernameLabel).addComponent(usernameTextField);
         
         ParallelGroup v2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
         v2.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
@@ -155,13 +158,13 @@ public class Client {
         
         startButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
-                if (username.getText().equals("")) {
+                if (usernameTextField.getText().equals("")) {
                     JOptionPane.showMessageDialog(dialog, "Please enter a username.", "Try again", JOptionPane.ERROR_MESSAGE);
                 } else if (boardList.isSelectionEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "Please select a board.", "Try again", JOptionPane.ERROR_MESSAGE);
                 } else
                     try {
-                        if (createUser(username.getText(), boardList.getSelectedValue())) {
+                        if (createUser(usernameTextField.getText(), boardList.getSelectedValue())) {
                             dialog.dispose();
                             setupCanvas();
                         } else {
@@ -189,6 +192,28 @@ public class Client {
             {
                 try {
                 	// kill receiving thread and wait for it to close out
+                    if (username!= null) {
+                        try {
+                            exitComplete = false;
+                            makeRequest("exit "+username).join();
+                            
+                            boolean timeout = false;
+                            int timeoutCounter = 0;
+                            int maxAttempts = 100;
+                            int timeoutDelay = 10;
+                            while(!exitComplete && !timeout) {
+                                timeoutCounter++;
+                                if (timeoutCounter >= maxAttempts) {
+                                    timeout = true;
+                                    System.out.println("timeout on exit");
+                                }
+                                Thread.sleep(timeoutDelay);
+                            }
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
 					receiveProtocol.kill();
 					socket.shutdownInput();
 					socket.shutdownOutput();
@@ -199,6 +224,10 @@ public class Client {
 				}
             }
         });
+    }
+    
+    public void completeExit() {
+        exitComplete = true;
     }
     
     class NewBoardWorker extends SwingWorker<Boolean, Object> {
@@ -420,9 +449,35 @@ public class Client {
     /**
      * Gets the users for the current board from the server and sets them
      */
-    public String[] getUsers() {
-        //TODO
-        return new String[] {"Jessica", "Juan", "Josh"};
+    public String[] getUsers() throws Exception {
+        usersUpdated = false;
+        makeRequest("users "+currentBoardName);
+        boolean timeout = false;
+        int timeoutCounter = 0;
+        int maxAttempts = 100;
+        int timeoutDelay = 10;
+        while(!usersUpdated && !timeout) {
+            timeoutCounter++;
+            if (timeoutCounter >= maxAttempts) {
+                timeout = true;
+                System.out.println("timeout on new users");
+            }
+            Thread.sleep(timeoutDelay);
+        }
+        return users;
+    }
+    
+    public String[] parseUsersFromServerResponse(String response) throws Exception {
+        String[] elements = response.split(" ");
+        if(!elements[0].equals("users")) {
+            throw new Exception("Server returned unexpected result: " + response);
+        }
+        return Arrays.copyOfRange(elements, 2, elements.length);
+    }
+    
+    public void setUsers(String[] newUsers) {
+        users = newUsers;
+        usersUpdated = true;
     }
     
     /**
@@ -538,6 +593,10 @@ public class Client {
     
     public String getUsername() {
         return username;
+    }
+    
+    public boolean checkForCorrectBoard(String boardName) {
+        return boardName.equals(currentBoardName);
     }
     
     /*

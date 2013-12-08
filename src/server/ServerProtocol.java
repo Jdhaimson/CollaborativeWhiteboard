@@ -77,10 +77,7 @@ public class ServerProtocol implements Runnable {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 try {
                     
-                	System.out.println("Handle Request: " + line);
-                    
 	            	String output = handleRequest(line);
-	            	System.out.println("output: "+output);
 	            	if(output != null) {
 	            		out.println(output);
 	            	}
@@ -100,7 +97,6 @@ public class ServerProtocol implements Runnable {
      * Receives:
      * 
      * New Board = "new boardName"
-     * Add User = "addUser username boardName"
      * Switch Board = "switch username oldBoardName newBoardName"
      * Exit = "exit username"
      * Draw = "draw boardName command param1 param2 param3"
@@ -116,13 +112,13 @@ public class ServerProtocol implements Runnable {
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9]+";
-    	String colorReg = "[#a-zA-Z0-9]+";
+    	String colorReg = "[0-9]+";
     	String floatReg = "[0-9]*.?[0-9]+";
     	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
-    			+ "(addUser "+nameReg+" "+nameReg+")|(exit "+nameReg+")|(users "+nameReg+")|"
+    			+ "(exit "+nameReg+")|(users "+nameReg+")|"
     			+ "(check "+nameReg+" "+nameReg+")|"
-    			+ "(draw "+nameReg+" "+nameReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+floatReg
-    			+" "+colorReg+" "+floatReg+")";
+    			+ "(draw "+nameReg+" "+nameReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+colorReg+" "+floatReg+")|"
+    			+ "(users "+nameReg+")";
         
         if ( ! input.matches(regex)) {
             // invalid input
@@ -151,18 +147,13 @@ public class ServerProtocol implements Runnable {
         	    str += command.toString() + newLine;
         	}
         	return str;
-        } // Add user 
-        else if (tokens[0].equals("addUser")) {
-        	String username = tokens[1];
-        	String boardName = tokens[2];
-        	server.enter(username, boardName);
-        	return "addUser " + username + " " + boardName + " true";
         }
         // Exit 
         else if (tokens[0].equals("exit")) {
+            
             String username = tokens[1];
             server.exit(username);
-            return "close connection: " + username;
+            return "exit " + username;
         } // Draw Command 
         else if (tokens[0].equals("draw")) {
             String boardName = tokens[1];
@@ -180,11 +171,10 @@ public class ServerProtocol implements Runnable {
             String boardName = tokens[2];
             String username = tokens[1];
             return "check " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
-            //return "check jessmand test true";
         } // Get Users
         else if (tokens[0].equals("users")) {
             String boardName = tokens[1];
-            return Arrays.toString(server.getUsers(boardName));
+            return "users "+boardName+" "+server.getUsers(boardName);
         }
         
 
