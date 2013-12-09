@@ -45,6 +45,7 @@ public class Canvas extends JFrame {
      */
     public Canvas(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
+        this.setResizable(false);
         this.client = client;
         addDrawingController(new DrawingController(false));
         

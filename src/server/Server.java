@@ -37,7 +37,6 @@ public class Server {
      */
     public Server(int port) throws IOException {
     	serverSocket = new ServerSocket(port);
-    	this.newBoard("test");
     }
     
     
@@ -159,7 +158,6 @@ public class Server {
      * @param boardName: the board they have chosen to enter
      */
     public synchronized void enter(String username, String boardName) {
-        System.out.println(boardName);
         Board board = boards.get(boardName);
         board.addUser(username);
     }
