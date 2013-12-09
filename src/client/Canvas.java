@@ -246,7 +246,6 @@ public class Canvas extends JFrame {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
             }
         });
         
