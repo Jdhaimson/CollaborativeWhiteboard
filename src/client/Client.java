@@ -7,7 +7,8 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,8 +18,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -35,8 +34,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-
-import server.ServerProtocol;
 import Command.Command;
 
 public class Client {
@@ -67,10 +64,10 @@ public class Client {
     
     //the socket with which the user connects to the client
     private Socket socket;
-    BufferedReader in;
-    PrintWriter out;
-    ClientReceiveProtocol receiveProtocol;
-    Thread receiveThread;
+    private BufferedReader in;
+    private PrintWriter out;
+    private ClientReceiveProtocol receiveProtocol;
+    private Thread receiveThread;
     
     private JDialog dialog;
     private DefaultListModel<String> boardListModel;
@@ -91,6 +88,14 @@ public class Client {
         dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
         dialog.setResizable(false);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+        
         final Container dialogContainer = new Container();
         GroupLayout layout = new GroupLayout(dialogContainer);
         layout.setAutoCreateGaps(true);
@@ -625,7 +630,8 @@ public class Client {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-					Client client = new Client();
+					@SuppressWarnings("unused")
+                    Client client = new Client();
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

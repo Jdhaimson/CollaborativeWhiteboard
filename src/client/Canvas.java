@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +16,6 @@ import java.io.IOException;
 import java.util.EventListener;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -33,6 +30,10 @@ import javax.swing.event.MenuListener;
  */
 public class Canvas extends JFrame {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     // image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
@@ -91,8 +92,8 @@ public class Canvas extends JFrame {
     public void updateCurrentUserBoard() {
         String user = client.getUsername();
         String board = client.getCurrentBoardName();
-        System.out.println("updated");
-        currentUserBoard = new JLabel("Hi, " + user + ". This board is: " + board);
+        System.out.println("updated; new board: "+board);
+        currentUserBoard.setText("Hi, " + user + ". This board is: " + board);
     }
     
     /**
@@ -325,6 +326,11 @@ public class Canvas extends JFrame {
         return new JLabel("Hi, " + user + ". This board is: " + board);
     }
     class MyCanvas extends JPanel {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
 
         /**
          * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)

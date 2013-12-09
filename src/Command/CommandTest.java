@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 import org.junit.Test;
 
