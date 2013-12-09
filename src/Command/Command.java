@@ -11,11 +11,6 @@ public class Command {
     private final String[] arguments;
     private final String boardName;
     
-    public Command(String command, String[] arguments, String boardName) {
-        this.command = command;
-        this.arguments = arguments;
-        this.boardName = boardName;
-    }
     
     /**
      * Parses a string received from the client that has already been determined to be a draw command
@@ -29,8 +24,15 @@ public class Command {
             arguments[i-3] = elements[i];
         }
         this.command = elements[2];
-        this.arguments = arguments;
         this.boardName = elements[1];
+        this.arguments = arguments;
+    }
+    
+    public Command(String boardName, String command, String[] arguments) {
+        this.boardName = boardName;
+        this.command = command;
+        this.arguments = arguments;
+
     }
     
     /**

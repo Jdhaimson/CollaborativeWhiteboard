@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.EventListener;
 
 import javax.swing.*;
@@ -36,6 +37,7 @@ public class Canvas extends JFrame {
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private Client client;
+    private JLabel currentUserBoard;
 
     //TODO:need current board name in menu bar
 
@@ -80,9 +82,17 @@ public class Canvas extends JFrame {
         menuBar.add(getColorsMenu());
         menuBar.add(getSlider());
         menuBar.add(Box.createHorizontalGlue());
-        menuBar.add(getCurrentUserBoard());
+        currentUserBoard = getCurrentUserBoard();
+        menuBar.add(currentUserBoard);
         menuBar.add(Box.createHorizontalGlue());
         this.setJMenuBar(menuBar);
+    }
+    
+    public void updateCurrentUserBoard() {
+        String user = client.getUsername();
+        String board = client.getCurrentBoardName();
+        System.out.println("updated");
+        currentUserBoard = new JLabel("Hi, " + user + ". This board is: " + board);
     }
     
     /**
@@ -126,10 +136,15 @@ public class Canvas extends JFrame {
     private JMenu getUsersMenu() {
         final JMenu usersMenu = new JMenu("Users");
         //List of Users
-        for (String user: client.getUsers()) {
-            JLabel label = new JLabel(user);
-            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
-            usersMenu.add(label);
+        try {
+            for (String user: client.getUsers()) {
+                JLabel label = new JLabel(user);
+                label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                usersMenu.add(label);
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         
         usersMenu.addMenuListener(new MenuListener() {
@@ -144,10 +159,15 @@ public class Canvas extends JFrame {
             @Override
             public void menuSelected(MenuEvent arg0) {
                 usersMenu.removeAll();
-                for (String user: client.getUsers()) {
-                    JLabel label = new JLabel(user);
-                    label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
-                    usersMenu.add(label);
+                try {
+                    for (String user: client.getUsers()) {
+                        JLabel label = new JLabel(user);
+                        label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                        usersMenu.add(label);
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         });
@@ -162,14 +182,35 @@ public class Canvas extends JFrame {
       //add List of Boards
         final JMenu boards = new JMenu("Board(s)");
 
-        //new board option
-        boards.add(new JMenuItem("New Board"));
+        JMenuItem newBoardButton = new JMenuItem("New Board");
+        boards.add(newBoardButton);
+        newBoardButton.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                client.newBoardDialog();
+            }
+        });
         boards.addSeparator();
         
         //List of Boards
-        String[] listBoards = client.getBoards();
-        for (String board: listBoards) {
-            boards.add(new JMenuItem(board));
+        String[] listBoards = {};
+		try {
+			listBoards = client.getBoards();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        for (final String board: listBoards) {
+            JMenuItem boardChoice = new JMenuItem(board);
+            boardChoice.addActionListener(new  ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+                    final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+                    g.setColor(Color.WHITE);
+                    g.fillRect(0,  0,  getWidth(), getHeight());
+                    repaint();
+                    
+                }
+            });
+            boards.add(boardChoice);
         }
 
         
@@ -184,13 +225,27 @@ public class Canvas extends JFrame {
 
             @Override
             public void menuSelected(MenuEvent arg0) {
-                for (int i=boards.getItemCount()-1; i>1; i--)
-                {
-                    boards.remove(i);
-                }
-                for (String board: client.getBoards()) {
-                    boards.add(new JMenuItem(board));
-                }
+            	for (int i=boards.getItemCount()-1; i>1; i--) {
+            		boards.remove(i);
+            	}
+                try {
+                    for (final String board: client.getBoards()) {
+                        JMenuItem boardChoice = new JMenuItem(board);
+                        boardChoice.addActionListener(new  ActionListener() {
+                            public void actionPerformed(ActionEvent event) {
+                                drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+                                final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+                                g.setColor(Color.WHITE);
+                                g.fillRect(0,  0,  getWidth(), getHeight());
+                                repaint();
+                                client.switchBoard(board);
+                            }
+                        });
+                        boards.add(boardChoice);
+                    }
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
             }
         });
         
@@ -220,11 +275,11 @@ public class Canvas extends JFrame {
         
         JMenu colors = new JMenu("Paint Color");
         
-        JColorChooser chooser = new JColorChooser(Color.BLACK);
+        JColorChooser chooser = new JColorChooser(client.getCurrentColor());
         colors.add(chooser);
         chooser.getSelectionModel().addChangeListener(new ColorChangeListener(colors));
         chooser.setPreviewPanel(new JPanel());
-        colors.setBorder(BorderFactory.createLineBorder(Color.BLACK,2));
+        colors.setBorder(BorderFactory.createLineBorder(client.getCurrentColor(),2));
         
         //remove panels
         AbstractColorChooserPanel[] panels = chooser.getChooserPanels();
@@ -258,7 +313,6 @@ public class Canvas extends JFrame {
         slider.setMinorTickSpacing(2);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        //slider.setSize(50, 1000);
         slider.setVisible(true);
         
         return slider;
@@ -313,6 +367,20 @@ public class Canvas extends JFrame {
             // IMPORTANT!  every time we draw on the internal drawing buffer, we
             // have to notify Swing to repaint this component on the screen.
             this.repaint();
+        }
+    }
+    
+    /*
+     * Draw a line between two points (x1, y1) and (x2, y2), specified in
+     * pixels relative to the upper-left corner of the drawing buffer.
+     */
+    public void drawLineSegmentAndCall(int x1, int y1, int x2, int y2, int color, float width) {
+        drawLineSegment(x1, y1, x2, y2, color, width);
+        try {
+            client.makeDrawRequest("drawLineSegment "+x1+" "+y1+" "+x2+" "+y2+" "+(color+16777216)+" "+width);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
     
@@ -378,7 +446,7 @@ public class Canvas extends JFrame {
             
             // to make up for the height of the menu
             int menuHeight = 73;
-            drawLineSegment(lastX, lastY - menuHeight, x, y - menuHeight, color.getRGB(), client.getCurrentWidth());
+            drawLineSegmentAndCall(lastX, lastY - menuHeight, x, y - menuHeight, color.getRGB(), client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }
