@@ -3,6 +3,8 @@ package client;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import Command.Command;
+
 public class ClientReceiveProtocol implements Runnable {
     
     private final BufferedReader in;
@@ -70,8 +72,10 @@ public class ClientReceiveProtocol implements Runnable {
      */
     private void handleRequest(String input) throws IOException, IllegalArgumentException {
         
-    	String nameReg = "[a-zA-Z0-9]+";
-    	String regex = "(users( "+nameReg+")+)|(exit "+nameReg+")|(boards( "+nameReg+")*)|(check ("+nameReg+" "+nameReg+" (true|false)))|(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	String nameReg = "[a-zA-Z0-9\\.]+";
+    	String regex = "(draw "+nameReg+"( "+nameReg+")+)|(users( "+nameReg+")+)|(exit "+nameReg+")|"
+    	        +"(boards( "+nameReg+")*)|(check ("+nameReg+" "+nameReg+" (true|false)))|"
+    	        +"(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
     	System.out.println("input: "+input);
     	// make sure it's a valid input
         if (input.matches(regex)) {
@@ -107,6 +111,15 @@ public class ClientReceiveProtocol implements Runnable {
             } else if (tokens[0].equals("exit")) {
                 try {
                     client.completeExit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (tokens[0].equals("draw")) {
+                try {
+                    Command command = new Command(input);
+                    if (command.checkBoardName(client.getCurrentBoardName())) {
+                        client.applyCommand(command);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

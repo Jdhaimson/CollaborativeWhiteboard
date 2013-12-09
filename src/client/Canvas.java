@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.EventListener;
 
 import javax.swing.*;
@@ -36,6 +37,7 @@ public class Canvas extends JFrame {
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private Client client;
+    private JLabel currentUserBoard;
 
     //TODO:need current board name in menu bar
 
@@ -80,9 +82,17 @@ public class Canvas extends JFrame {
         menuBar.add(getColorsMenu());
         menuBar.add(getSlider());
         menuBar.add(Box.createHorizontalGlue());
-        menuBar.add(getCurrentUserBoard());
+        currentUserBoard = getCurrentUserBoard();
+        menuBar.add(currentUserBoard);
         menuBar.add(Box.createHorizontalGlue());
         this.setJMenuBar(menuBar);
+    }
+    
+    public void updateCurrentUserBoard() {
+        String user = client.getUsername();
+        String board = client.getCurrentBoardName();
+        System.out.println("updated");
+        currentUserBoard = new JLabel("Hi, " + user + ". This board is: " + board);
     }
     
     /**
@@ -188,9 +198,19 @@ public class Canvas extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-        for (String board: listBoards) {
-            boards.add(new JMenuItem(board));
+        for (final String board: listBoards) {
+            JMenuItem boardChoice = new JMenuItem(board);
+            boardChoice.addActionListener(new  ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+                    final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+                    g.setColor(Color.WHITE);
+                    g.fillRect(0,  0,  getWidth(), getHeight());
+                    repaint();
+                    
+                }
+            });
+            boards.add(boardChoice);
         }
 
         
@@ -209,9 +229,20 @@ public class Canvas extends JFrame {
             		boards.remove(i);
             	}
                 try {
-					for (String board: client.getBoards()) {
-					    boards.add(new JMenuItem(board));
-					}
+                    for (final String board: client.getBoards()) {
+                        JMenuItem boardChoice = new JMenuItem(board);
+                        boardChoice.addActionListener(new  ActionListener() {
+                            public void actionPerformed(ActionEvent event) {
+                                drawingBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+                                final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+                                g.setColor(Color.WHITE);
+                                g.fillRect(0,  0,  getWidth(), getHeight());
+                                repaint();
+                                client.switchBoard(board);
+                            }
+                        });
+                        boards.add(boardChoice);
+                    }
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -344,6 +375,20 @@ public class Canvas extends JFrame {
      * Draw a line between two points (x1, y1) and (x2, y2), specified in
      * pixels relative to the upper-left corner of the drawing buffer.
      */
+    public void drawLineSegmentAndCall(int x1, int y1, int x2, int y2, int color, float width) {
+        drawLineSegment(x1, y1, x2, y2, color, width);
+        try {
+            client.makeDrawRequest("drawLineSegment "+x1+" "+y1+" "+x2+" "+y2+" "+(color+16777216)+" "+width);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    /*
+     * Draw a line between two points (x1, y1) and (x2, y2), specified in
+     * pixels relative to the upper-left corner of the drawing buffer.
+     */
     public void drawLineSegment(int x1, int y1, int x2, int y2, int color, float width) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
         Color colorObject = new Color(color);
@@ -402,7 +447,7 @@ public class Canvas extends JFrame {
             
             // to make up for the height of the menu
             int menuHeight = 73;
-            drawLineSegment(lastX, lastY - menuHeight, x, y - menuHeight, color.getRGB(), client.getCurrentWidth());
+            drawLineSegmentAndCall(lastX, lastY - menuHeight, x, y - menuHeight, color.getRGB(), client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }

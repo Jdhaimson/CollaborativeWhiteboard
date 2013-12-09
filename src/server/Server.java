@@ -90,12 +90,12 @@ public class Server {
     /**
      * Test method
      */
-    public void sendHello() {
+    public void sendDrawCommand(Command command) {
     	for (Socket client: clients) {
     		try {
     			if (!client.isClosed()) {
     				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-					out.println("Hello world!");
+					out.println(command.toString());
     			}
     		} catch (IOException e) {
 				// TODO Auto-generated catch block

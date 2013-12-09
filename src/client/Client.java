@@ -167,6 +167,7 @@ public class Client {
                         if (createUser(usernameTextField.getText(), boardList.getSelectedValue())) {
                             dialog.dispose();
                             setupCanvas();
+                            makeRequest("switch "+username+" "+currentBoardName+" "+currentBoardName);
                         } else {
                             JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
                         }
@@ -366,10 +367,12 @@ public class Client {
             this.username = elements[1];
             this.currentBoardName = elements[2];
         }
+        userCheckMade = true;
     }
     
     public void setupCanvas() {
         frame = new JFrame("Freehand Canvas");
+        frame.setTitle("Whiteboard");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
         frame.setResizable(false);
@@ -390,7 +393,22 @@ public class Client {
      * @param newBoardName: the name of the new board
      */
     public void switchBoard(String newBoardName) {
-        //TODO
+        try {
+            makeRequest("switch "+username+" "+currentBoardName+" "+newBoardName);
+            currentBoardName = newBoardName;
+            canvas.updateCurrentUserBoard();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    public void applyCommand(Command command) {
+        command.invokeCommand(canvas);
+    }
+    
+    public void makeDrawRequest(String command) throws IOException {
+        makeRequest("draw "+currentBoardName+" "+command);
     }
 
     /**

@@ -111,13 +111,11 @@ public class ServerProtocol implements Runnable {
      */
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
-    	String nameReg = "[a-zA-Z0-9]+";
-    	String colorReg = "[0-9]+";
-    	String floatReg = "[0-9]*.?[0-9]+";
+    	String nameReg = "[a-zA-Z0-9\\.]+";
     	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
     			+ "(exit "+nameReg+")|(users "+nameReg+")|"
     			+ "(check "+nameReg+" "+nameReg+")|"
-    			+ "(draw "+nameReg+" "+nameReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+floatReg+" "+colorReg+" "+floatReg+")|"
+    			+ "(draw "+nameReg+"( "+nameReg+")+)|"
     			+ "(users "+nameReg+")";
         
         if ( ! input.matches(regex)) {
@@ -125,7 +123,7 @@ public class ServerProtocol implements Runnable {
         	System.out.println("Invalid input");
             return null;
         }
-        System.out.println(input);
+
         String[] tokens = input.split(" ");
         
         // Get Boards
@@ -157,13 +155,9 @@ public class ServerProtocol implements Runnable {
         } // Draw Command 
         else if (tokens[0].equals("draw")) {
             String boardName = tokens[1];
-            String methodName = tokens[2];
-            String[] params = new String[tokens.length-3];
-            for (int i=3; i<tokens.length;i++) {
-                params[i-3] = tokens[i];
-            }
-            Command command = new Command(boardName, methodName, params);
+            Command command = new Command(input);
             server.updateBoard(boardName, command);
+            server.sendDrawCommand(command);
             return "draw";
         } // Check User
         else if (tokens[0].equals("check")) {
@@ -183,71 +177,7 @@ public class ServerProtocol implements Runnable {
         throw new UnsupportedOperationException();
     }
     
-    /**
-     * Sends a command in string format to one board
-     * @param client: the socket to send the command to
-     * @param command: the command to send
-     */
-    public void commandBoard(Socket client, Command command) {
-        String commandString = command.toString();
-        //TODO
-    }
     
-    /**
-     * Sends the same command to all of the clients
-     * @param command: the command to send
-     */
-    public void commandAllBoards(Command command) {
-        List<Socket> clients = server.getClients();
-        for (Socket client : clients) {
-            commandBoard(client, command);
-        }
-    }
     
-    public void updateBoard(String boardName) {
-        Board commands = server.getCommands(boardName);
-        for (Command command : commands.getCommands()) {
-            commandBoard(this.socket, command);
-        }
-    }
-    
-    /**
-     * Calls server.newBoard and returns the result to the client
-     * format of return: "new boardName boolean"
-     */
-    public void newBoard() {
-        //TODO
-    }
-    
-    /**
-     * Calls server.switchBoard
-     * Calls updateBoard (if you're switching boards you obviously want to update too)
-     */
-    public void switchBoard() {
-        //TODO
-    }
-    
-    /**
-     * Closes connections and calls server.exit
-     */
-    public void exit() {
-        //TODO
-    }
-    
-    /**
-     * Calls server.getBoards and returns the result to the client
-     * Format of response: "boards board1 board2 board3"
-     */
-    public void getBoards() {
-        //TODO
-    }
-    
-    /**
-     * Returns the new list of users for a board to the client
-     * format of response: "users boardName user1 user2 user3"
-     */
-    public void updateUsers() {
-        //TODO
-    }
 
 }
