@@ -89,7 +89,7 @@ public class ServerProtocol implements Runnable {
 	 *        Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
 	 * Get Users = "users boardName"
 	 * Get boards = "boards"
-	 * Check Users = "check username boardName"
+	 * Check and add User = "checkAndAddUser username boardName"
 	 * 
 	 * 
 	 * Sends: 
@@ -98,7 +98,7 @@ public class ServerProtocol implements Runnable {
 	 * Update Available Boards = "boards board1 board2 board3"
 	 * Draw = "draw boardName command param1 param2 param3"
 	 *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-	 * Check Users = "check username boardName boolean"
+	 * Check and add User = "checkAndAddUser username boardName boolean"
 	 * New Board = "new boardName boolean"
      * 
      * 
@@ -111,7 +111,7 @@ public class ServerProtocol implements Runnable {
     	String nameReg = "[a-zA-Z0-9\\.]+";
     	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
     			+ "(exit "+nameReg+")|(users "+nameReg+")|"
-    			+ "(check "+nameReg+" "+nameReg+")|"
+    			+ "(checkAndAddUser "+nameReg+" "+nameReg+")|"
     			+ "(draw "+nameReg+"( "+nameReg+")+)|"
     			+ "(users "+nameReg+")";
         
@@ -157,11 +157,11 @@ public class ServerProtocol implements Runnable {
             server.sendCommandToClients(command);
             return "draw";
         } // Check User
-        else if (tokens[0].equals("check")) {
+        else if (tokens[0].equals("checkAndAddUser")) {
             
             String boardName = tokens[2];
             String username = tokens[1];
-            return "check " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
+            return "checkAndAddUser " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
         } // Get Users
         else if (tokens[0].equals("users")) {
             String boardName = tokens[1];

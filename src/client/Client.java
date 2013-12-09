@@ -334,7 +334,7 @@ public class Client {
      * @return: true if username creation is successful, false if not
      */
     public boolean createUser(String username, String boardName) throws Exception {
-        makeRequest("check "+username+" "+boardName).join();
+        makeRequest("checkAndAddUser "+username+" "+boardName).join();
         userCheckMade = false;
         boolean timeout = false;
         int timeoutCounter = 0;
