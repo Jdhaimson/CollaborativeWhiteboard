@@ -56,7 +56,7 @@ public class ClientReceiveProtocol implements Runnable {
      * Draw = "draw boardName command param1 param2 param3"
      *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
      * Check and add User = "checkAndAddUser username boardName boolean"
-     * New Board = "new boardName boolean"
+     * New Board = "newBoard boardName boolean"
      * 
      * @param input message from server
      * @return message to client
@@ -67,7 +67,7 @@ public class ClientReceiveProtocol implements Runnable {
     	String nameReg = "[a-zA-Z0-9\\.]+";
     	String regex = "(draw "+nameReg+"( "+nameReg+")+)|(users( "+nameReg+")+)|(exit "+nameReg+")|"
     	        +"(boards( "+nameReg+")*)|(checkAndAddUser ("+nameReg+" "+nameReg+" (true|false)))|"
-    	        +"(new "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	        +"(newBoard "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
     	System.out.println("input: "+input);
     	// make sure it's a valid input
         if (input.matches(regex)) {
@@ -79,7 +79,7 @@ public class ClientReceiveProtocol implements Runnable {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-            }  else if (tokens[0].equals("new")) {
+            }  else if (tokens[0].equals("newBoard")) {
                 try {
                     client.parseNewBoardFromServerResponse(input);
                 } catch (Exception e) {

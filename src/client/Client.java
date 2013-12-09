@@ -418,7 +418,7 @@ public class Client {
         if (newBoardMade.containsKey(newBoardName)) return false;
         newBoardMade.put(newBoardName, false);
         newBoardSuccessful.put(newBoardName, true);
-        makeRequest("new "+newBoardName).join();
+        makeRequest("newBoard "+newBoardName).join();
         boolean timeout = false;
         int timeoutCounter = 0;
         int maxAttempts = 100;

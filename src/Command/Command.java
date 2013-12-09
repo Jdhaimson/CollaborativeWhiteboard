@@ -11,6 +11,20 @@ public class Command {
     private final String[] arguments;
     private final String boardName;
     
+    /**
+     * Creates command from token array passed that has already been determined to be a draw command
+     * @param elements: Elements of command in format ["draw", "boardName", "command", "arg1", "arg2", "arg3", ...]
+     * @return a Command object with the command and the arguments
+     */
+    public Command(String[] elements) {
+        String[] arguments = new String[elements.length-3];
+        for (int i=3; i<elements.length;i++) {
+            arguments[i-3] = elements[i];
+        }
+        this.command = elements[2];
+        this.boardName = elements[1];
+        this.arguments = arguments;
+    }
     
     /**
      * Parses a string received from the client that has already been determined to be a draw command

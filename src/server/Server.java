@@ -37,6 +37,8 @@ public class Server {
      */
     public Server(int port) throws IOException {
     	serverSocket = new ServerSocket(port);
+    	// Add shutdown hook to close server gracefully
+    	addShutDownHook();
     }
     
     
@@ -218,6 +220,34 @@ public class Server {
      */
     public Board getCommands(String boardName) {
         return boards.get(boardName);
+    }
+    
+    /**
+     * Shuts down all client connections and then shuts down serverSocket
+     * @throws IOException
+     */
+    public void shutDown() throws IOException {
+    	for (Socket client: clients) {
+    		client.close();
+    	}
+    	serverSocket.close();
+    }
+    
+    public void addShutDownHook() {
+    	// Add shutdown hook to shutdown server gracefully
+        final Thread mainThread = Thread.currentThread();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+					shutDown();
+					mainThread.join();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+            }
+        });
     }
     
     /**

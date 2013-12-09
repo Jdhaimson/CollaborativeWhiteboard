@@ -82,7 +82,7 @@ public class ServerProtocol implements Runnable {
      * 
      * Receives:
 	 * 
-	 * New Board = "new boardName"
+	 * New Board = "newBoard boardName"
 	 * Switch Board = "switch username oldBoardName newBoardName"
 	 * Exit = "exit username"
 	 * Draw = "draw boardName command param1 param2 param3 ... "
@@ -99,7 +99,7 @@ public class ServerProtocol implements Runnable {
 	 * Draw = "draw boardName command param1 param2 param3"
 	 *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
 	 * Check and add User = "checkAndAddUser username boardName boolean"
-	 * New Board = "new boardName boolean"
+	 * New Board = "newBoard boardName boolean"
      * 
      * 
      * @param input message from client
@@ -109,7 +109,7 @@ public class ServerProtocol implements Runnable {
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9\\.]+";
-    	String regex = "(boards)|(new "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
+    	String regex = "(boards)|(newBoard "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
     			+ "(exit "+nameReg+")|(users "+nameReg+")|"
     			+ "(checkAndAddUser "+nameReg+" "+nameReg+")|"
     			+ "(draw "+nameReg+"( "+nameReg+")+)|"
@@ -125,54 +125,116 @@ public class ServerProtocol implements Runnable {
         
         // Get Boards
         if (tokens[0].equals("boards")) {
-        	return "boards " + server.getBoards();
-        } //New Board
-        else if (tokens[0].equals("new")) {
-        	String boardName = tokens[1];
-        	return "new " + boardName + " " + String.valueOf(server.newBoard(boardName));
-        } // Switch Board
+        	return boards(tokens);
+        } 
+        //New Board
+        else if (tokens[0].equals("newBoard")) {
+        	return newBoard(tokens);
+        } 
+        // Switch Board
         else if (tokens[0].equals("switch")) {
-            String userName = tokens[1];
-            String oldBoardName = tokens[2];
-            String newBoardName = tokens[3];
-            String newLine = System.getProperty("line.separator");
-            List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
-        	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
-        	for (Command command: commands) {
-        	    str += command.toString() + newLine;
-        	}
-        	return str;
+        	return switchBoard(tokens);
         }
         // Exit 
         else if (tokens[0].equals("exit")) {
-            
-            String username = tokens[1];
-            server.exit(username);
-            return "exit " + username;
-        } // Draw Command 
+        	return exit(tokens);
+        } 
+        // Draw Command 
         else if (tokens[0].equals("draw")) {
-            String boardName = tokens[1];
-            Command command = new Command(input);
-            server.updateBoard(boardName, command);
-            server.sendCommandToClients(command);
-            return "draw";
-        } // Check User
+        	return draw(tokens);
+        } 
+        // Check and add User
         else if (tokens[0].equals("checkAndAddUser")) {
-            
-            String boardName = tokens[2];
-            String username = tokens[1];
-            return "checkAndAddUser " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
-        } // Get Users
+        	return checkAndAddUser(tokens);
+        } 
+        // Get Users
         else if (tokens[0].equals("users")) {
-            String boardName = tokens[1];
-            return "users "+boardName+" "+server.getUsers(boardName);
+        	return users(tokens);
         }
 
         // Should never get here-- should return in each of the valid cases above.
         throw new UnsupportedOperationException();
     }
     
+    /**
+     * Boards response
+     * @param tokens
+     * @return
+     */
+    public String boards(String[] tokens) {
+    	return "boards " + server.getBoards();
+    }
     
+    /**
+     * New board response
+     * @param tokens
+     * @return
+     */
+    public String newBoard(String[] tokens) {
+    	String boardName = tokens[1];
+    	return "newBoard " + boardName + " " + String.valueOf(server.newBoard(boardName));
+    }
     
-
+    /**
+     * Switch board response
+     * @param tokens
+     * @return
+     */
+    public String switchBoard(String[] tokens) {
+        String userName = tokens[1];
+        String oldBoardName = tokens[2];
+        String newBoardName = tokens[3];
+        String newLine = System.getProperty("line.separator");
+        List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
+    	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
+    	for (Command command: commands) {
+    	    str += command.toString() + newLine;
+    	}
+    	return str;
+    }
+    
+    /**
+     * Exit board response
+     * @param tokens
+     * @return
+     */
+    public String exit(String[] tokens) {
+        String username = tokens[1];
+        server.exit(username);
+        return "exit " + username;
+    }
+    
+    /**
+     * draw response
+     * @param tokens
+     * @return
+     */
+    public String draw(String[] tokens) {
+        String boardName = tokens[1];
+        Command command = new Command(tokens);
+        server.updateBoard(boardName, command);
+        server.sendCommandToClients(command);
+        return "draw";
+    }
+    
+    /**
+     * checkAndAddUser response
+     * @param tokens
+     * @return
+     */
+    public String checkAndAddUser(String[] tokens) {
+        String boardName = tokens[2];
+        String username = tokens[1];
+        return "checkAndAddUser " + username + " " + boardName + " " + String.valueOf(server.checkUser(username, boardName));
+    }
+    
+    /**
+     * Get Users response
+     * @param tokens
+     * @return
+     */
+    public String users(String[] tokens) {
+        String boardName = tokens[1];
+        return "users "+boardName+" "+server.getUsers(boardName);
+    }
 }
