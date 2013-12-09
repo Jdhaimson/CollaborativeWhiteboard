@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,9 +16,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -36,7 +32,6 @@ import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 
-import server.ServerProtocol;
 import Command.Command;
 
 public class Client {
@@ -76,8 +71,8 @@ public class Client {
     private DefaultListModel<String> boardListModel;
     private JTextField newBoard;
     
-    public Client() throws UnknownHostException, IOException {
-        socket = new Socket("localhost", 4444);
+    public Client(String host, int port) throws UnknownHostException, IOException {
+        socket = new Socket(host, port);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
         receiveProtocol = new ClientReceiveProtocol(in, this);
@@ -625,7 +620,8 @@ public class Client {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-					Client client = new Client();
+					@SuppressWarnings("unused")
+					Client client = new Client("localhost", 4444);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

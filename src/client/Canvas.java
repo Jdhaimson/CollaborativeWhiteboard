@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +16,6 @@ import java.io.IOException;
 import java.util.EventListener;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -32,16 +29,15 @@ import javax.swing.event.MenuListener;
  * on it freehand, with the mouse.
  */
 public class Canvas extends JFrame {
-
-    // image where the user's drawing is stored
+	// serial id for jframe
+	private static final long serialVersionUID = 1L;
+	
+	// image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private Client client;
     private JLabel currentUserBoard;
 
-    //TODO:need current board name in menu bar
-
-    
     /**
      * Make a canvas.
      * @param width width in pixels
@@ -327,6 +323,11 @@ public class Canvas extends JFrame {
     class MyCanvas extends JPanel {
 
         /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
          * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
          */
         @Override

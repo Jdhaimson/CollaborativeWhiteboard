@@ -4,15 +4,28 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
 import Command.Command;
 
+/**
+ * Server for collaborative whiteboard application
+ * 
+ * Concurrency Argument:
+ *   - All board objects are thread safe (see Board.java)
+ *   - All methods that modify this objects data representation are 
+ *     made concurrent via the monitor pattern
+ * 
+ * @author Josh
+ */
 public class Server {
     
-    //stores all the boards created as canvases associated with names
+    //stores all the boards created as Board objects associated with names
     private Hashtable<String, Board> boards = new Hashtable<String, Board>();
     private List<Socket> clients = new LinkedList<Socket>();
     private final ServerSocket serverSocket;
@@ -34,11 +47,12 @@ public class Server {
      * Never returns unless an exception is thrown.
      * 
      * @throws IOException if the main server socket is broken
-     *                     (IOExceptions from individual clients do *not* terminate serve())
+     *   Note: (IOExceptions from individual clients do *not* terminate serve())
      */
     public void serve() throws IOException {
     	System.out.println("Server serving");
         while (true) {
+        	
             // block until a client connects
             Socket socket = serverSocket.accept();
             clients.add(socket);
@@ -49,24 +63,11 @@ public class Server {
     }
     
     /**
-     * Iterates through all the sockets and sends the command to each
-     * 
-     * @param socket
-     *            the one socket that sent the command to the server in the
-     *            first place and thus does not need to be updated
-     */
-    public synchronized void updateClients(String command) {
-        //TODO
-    }
-    
-    /**
      * Add the command on the server's queue of commands Requires valid board
      * name
      * 
-     * @param boardName
-     *            the board to draw on
-     * @param command
-     *            the command to perform on the board
+     * @param boardName: the board to draw on
+     * @param command: the command to perform on the board
      */
     public void updateBoard(String boardName, Command command) {
         boards.get(boardName).addCommand(command);
@@ -75,6 +76,7 @@ public class Server {
     /**
      * Checks if the board name is unique
      * Creates a new board with the specified board name
+     * 
      * @param boardName: the name of the new board
      * @return: whether or not the new board was successfully made
      */
@@ -88,17 +90,18 @@ public class Server {
     }
     
     /**
-     * Test method
+     * Iterates through all the sockets and sends the command to each
+     * 
+     * @param Command - command to be sent to all clients 
      */
-    public void sendDrawCommand(Command command) {
+    public void sendCommandToClients(Command command) {
     	for (Socket client: clients) {
-    		try {
-    			if (!client.isClosed()) {
-    				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+			try {
+	    		if (!client.isClosed()) {
+					PrintWriter out = new PrintWriter(client.getOutputStream(), true);
 					out.println(command.toString());
-    			}
-    		} catch (IOException e) {
-				// TODO Auto-generated catch block
+				}
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
     	}
@@ -108,7 +111,7 @@ public class Server {
      * Gets the users from a board
      * 
      * @param boardName
-     * @return String[] of users from the board
+     * @return String which is a list of all users on the board
      */
     public String getUsers(String boardName) {
         Board board = boards.get(boardName);
@@ -128,14 +131,10 @@ public class Server {
     /**
      * Removes the user from the old board and adds the user to the new board.
      * 
-     * @param username
-     *            the username of the user making the switch
-     * @param oldBoardName
-     *            the name of the board the user is switching from
-     * @param newBoardName
-     *            the name of the board the user is switching to
-     * @return
-     *          List of Commands of the new Board the user is switching to           
+     * @param username: the username of the user making the switch
+     * @param oldBoardName: name of the board the user is switching from
+     * @param newBoardName: the name of the board the user is switching to
+     * @return: List of Commands of the new Board the user is switching to           
      */
     public List<Command> switchBoard(String username, String oldBoardName, String newBoardName) {
         boards.get(oldBoardName).deleteUser(username);
@@ -190,38 +189,79 @@ public class Server {
      * @param boardName: the board the user wants to enter
      * @return: whether or not the user entered successfully
      */
-    public boolean checkUser(String username, String boardName) {
+    public synchronized boolean checkUser(String username, String boardName) {
         boolean unique = true;
-        //System.out.println("enter: "+username);
+
         for (String board : boards.keySet()) {
-            if (!boards.get(board).checkUsername(username)) {
+            if (!boards.get(board).checkUsernameAvailable(username)) {
                 unique = false;
             }
         }
         
-        if (unique == true) {
+        // If user is unique, add them to board
+        if (unique) {
             enter(username, boardName);
-            return true;
-        } else {
-            return false;
-        }
+        } 
+        return unique;
     }
     
+    /**
+     * Returns clients connected to server
+     * @return
+     */
     public List<Socket> getClients() {
         return clients;
     }
     
+    /**
+     * Gets all commands sent to a specific board
+     * @param boardName
+     * @return
+     */
     public Board getCommands(String boardName) {
         return boards.get(boardName);
     }
     
+    /**
+     * Main method to launch server from command line
+     * @param args
+     */
     public static void main(String[] args) {
-    	Server server;
+
+        int port = 4444; // default port
+
+        // Check for and parse command line arguments
+        Queue<String> arguments = new LinkedList<String>(Arrays.asList(args));
+        try {
+            while ( ! arguments.isEmpty()) {
+                String flag = arguments.remove();
+                try {
+                    if (flag.equals("--port")) {
+                        port = Integer.parseInt(arguments.remove());
+                        if (port < 0 || port > 65535) {
+                            throw new IllegalArgumentException("port " + port + " out of range");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("unknown option: \"" + flag + "\"");
+                    }
+                } catch (NoSuchElementException nsee) {
+                    throw new IllegalArgumentException("missing argument for " + flag);
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalArgumentException("unable to parse number for " + flag);
+                }
+            }
+        } catch (IllegalArgumentException iae) {
+            System.err.println(iae.getMessage());
+            System.err.println("usage: Server [--port PORT]");
+            return;
+        }
+    	
+    	
+    	// Try to launch the server
 		try {
-			server = new Server(4444);
+			Server server = new Server(4444);
 			server.serve();
 		} catch (IOException e) {
-			System.out.println("You pooped up");
 			e.printStackTrace();
 		}
     	

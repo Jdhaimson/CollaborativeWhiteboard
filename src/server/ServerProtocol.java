@@ -5,35 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.List;
 
 import Command.Command;
 
+/**
+ * Thread which handles each individual connection with each client and
+ * communicates through the following grammar
+ * 
+ * Concurrency Argument:
+ *   - this thread only performs actions on thread safe objects (Board, Server) 
+ * 
+ * @author Josh
+ *
+ */
 public class ServerProtocol implements Runnable {
-    
-    /*
-     * Receives:
-     * 
-     * New Board = "new boardName"
-     * Switch Board = "switch username oldBoardName newBoardName"
-     * Exit = "exit username"
-     * Draw = "draw boardName command param1 param2 param3"
-     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-     * Get Users = "users boardName"
-     * Get boards = "boards"
-     * Check Users = "check username boardName"
-     * 
-     * 
-     * Sends: 
-     * 
-     * Update Users = "users boardName user1 user2 user3..."
-     * Update Available Boards = "boards board1 board2 board3"
-     * Draw = "draw boardName command param1 param2 param3"
-     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-     * Check Users = "check username boardName boolean"
-     * New Board = "new boardName boolean"
-     */
     
     private final Socket socket;
     private final Server server;
@@ -48,12 +34,11 @@ public class ServerProtocol implements Runnable {
      */
     @Override
     public void run() {
-        // handle the client
+        // handle the connection with the client
         try {
-            
             handleConnection(socket);
         } catch (IOException e) {
-            e.printStackTrace(); // but don't terminate
+            e.printStackTrace();
         } finally {
             try {
 				socket.close();
@@ -94,16 +79,28 @@ public class ServerProtocol implements Runnable {
     
     /**
      * Handler for client input, performing requested operations and returning an output message.
-     * Receives:
      * 
-     * New Board = "new boardName"
-     * Switch Board = "switch username oldBoardName newBoardName"
-     * Exit = "exit username"
-     * Draw = "draw boardName command param1 param2 param3"
-     *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
-     * Get Users = "users boardName"
-     * Get boards = "boards"
-     * Check Users = "check username boardName"
+     * Receives:
+	 * 
+	 * New Board = "new boardName"
+	 * Switch Board = "switch username oldBoardName newBoardName"
+	 * Exit = "exit username"
+	 * Draw = "draw boardName command param1 param2 param3 ... "
+	 *        Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
+	 * Get Users = "users boardName"
+	 * Get boards = "boards"
+	 * Check Users = "check username boardName"
+	 * 
+	 * 
+	 * Sends: 
+	 * 
+	 * Update Users = "users boardName user1 user2 user3..."
+	 * Update Available Boards = "boards board1 board2 board3"
+	 * Draw = "draw boardName command param1 param2 param3"
+	 *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
+	 * Check Users = "check username boardName boolean"
+	 * New Board = "new boardName boolean"
+     * 
      * 
      * @param input message from client
      * @return message to client
@@ -157,7 +154,7 @@ public class ServerProtocol implements Runnable {
             String boardName = tokens[1];
             Command command = new Command(input);
             server.updateBoard(boardName, command);
-            server.sendDrawCommand(command);
+            server.sendCommandToClients(command);
             return "draw";
         } // Check User
         else if (tokens[0].equals("check")) {
@@ -170,10 +167,8 @@ public class ServerProtocol implements Runnable {
             String boardName = tokens[1];
             return "users "+boardName+" "+server.getUsers(boardName);
         }
-        
 
-
-        // Should never get here--make sure to return in each of the valid cases above.
+        // Should never get here-- should return in each of the valid cases above.
         throw new UnsupportedOperationException();
     }
     

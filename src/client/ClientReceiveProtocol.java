@@ -27,7 +27,7 @@ public class ClientReceiveProtocol implements Runnable {
 		    try {
 		        handleConnection(in);
 		    } catch (IOException e) {
-		        e.printStackTrace(); // but don't terminate
+		    	// Means connection has closed
 		    }
     	}
     }
@@ -39,19 +39,11 @@ public class ClientReceiveProtocol implements Runnable {
      * @param socket socket where the client is connected
      * @throws IOException if connection has an error or terminates unexpectedly
      */
-    private void handleConnection(BufferedReader in) throws IOException {
-        
-        try {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                try {
-                	System.out.println("Handle Request: " + line);
-	            	handleRequest(line);
-                } catch (IllegalArgumentException e) {
-	                e.printStackTrace();   
-                }                
-            }
-        } finally {
-            in.close();
+    private void handleConnection(BufferedReader in) throws IOException {        
+
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
+        	System.out.println("Handle Request: " + line);
+        	handleRequest(line);                
         }
     }
     
