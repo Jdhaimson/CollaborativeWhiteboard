@@ -210,8 +210,12 @@ public class Client {
         
         newBoardButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
-                NewBoardWorker worker = new NewBoardWorker(newBoard.getText());
-                worker.execute();
+                if (!newBoard.getText().equals("")) {
+                    NewBoardWorker worker = new NewBoardWorker(newBoard.getText());
+                    worker.execute();
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Please enter a board name.", "Try again", JOptionPane.ERROR_MESSAGE);
+                }
                 
             }
         });
