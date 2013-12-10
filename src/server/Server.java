@@ -148,7 +148,7 @@ public class Server {
      * @param username: the username of the user exiting
      */
     public synchronized void exit(String username) {
-        for(String boardName : boards.keySet()) {
+        for(String boardName: boards.keySet()) {
             Board board = boards.get(boardName);
             board.deleteUser(username);
         }

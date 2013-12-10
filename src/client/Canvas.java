@@ -183,7 +183,7 @@ public class Canvas extends JFrame {
         boards.add(newBoardButton);
         newBoardButton.addActionListener(new  ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                client.newBoardDialog();
+                client.getClientGUI().newBoardDialog();
             }
         });
         boards.addSeparator();
