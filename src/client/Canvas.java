@@ -30,19 +30,16 @@ import javax.swing.event.MenuListener;
  */
 public class Canvas extends JFrame {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
     // image where the user's drawing is stored
+	// serial id for jframe
+	private static final long serialVersionUID = 1L;
+	
+	// image where the user's drawing is stored
     private BufferedImage drawingBuffer;
     private EventListener currentListener;
     private Client client;
     private JLabel currentUserBoard;
 
-    //TODO:need current board name in menu bar
-
-    
     /**
      * Make a canvas.
      * @param width width in pixels
@@ -50,6 +47,7 @@ public class Canvas extends JFrame {
      */
     public Canvas(int width, int height, Client client) {
         this.setPreferredSize(new Dimension(width, height));
+        this.setResizable(false);
         this.client = client;
         addDrawingController(new DrawingController(false));
         
@@ -328,11 +326,11 @@ public class Canvas extends JFrame {
     class MyCanvas extends JPanel {
 
         /**
-         * 
-         */
-        private static final long serialVersionUID = 1L;
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
-        /**
+		/**
          * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
          */
         @Override

@@ -52,7 +52,7 @@ public class ServerTest {
     public void testServe() {
         try {
             Server server = makeServer();
-            Client client = new Client();
+            Client client = new Client("localhost", 4444);
             List<Socket> clients = server.getClients();
             Socket clientSocket = client.getSocket();
             List<Socket> clientSocketAsList = new LinkedList<Socket>();

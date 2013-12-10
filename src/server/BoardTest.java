@@ -41,8 +41,8 @@ public class BoardTest {
     public void checkUsernameTest() {
         Board board = new Board();
         board.setUsers(new String[] {"josh"});
-        assertTrue(!board.checkUsername("josh"));
-        assertTrue(board.checkUsername("juan"));
+        assertTrue(!board.checkUsernameAvailable("josh"));
+        assertTrue(board.checkUsernameAvailable("juan"));
     }
 
 }

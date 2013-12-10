@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -18,7 +17,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.ExecutionException;
-
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -70,25 +68,48 @@ public class Client {
     private ClientReceiveProtocol receiveProtocol;
     private Thread receiveThread;
     
+    // Start Dialog GUI objects
     private JDialog dialog;
     private DefaultListModel<String> boardListModel;
+    private JLabel newBoardLabel;
     private JTextField newBoard;
+    private JList<String> boardList;
+    private Container dialogContainer;
+    private GroupLayout layout;
+    private JTextField usernameTextField;
+    private JLabel usernameLabel;
+    private JScrollPane boardListScroller;
+    private JButton newBoardButton;
+    private JButton startButton;
     
-    public Client() throws UnknownHostException, IOException {
-        socket = new Socket("localhost", 4444);
+    public Client(String host, int port) throws UnknownHostException, IOException {
+        socket = new Socket(host, port);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
         receiveProtocol = new ClientReceiveProtocol(in, this);
         receiveThread = new Thread(receiveProtocol);
         receiveThread.start();
         startDialog();
-        
     }
     
+    /**
+     * Creates start dialog which handles username and initial board
+     */
     private void startDialog() {
         dialog = new JDialog();
         dialog.setTitle("Welcome to Whiteboard");
         dialog.setResizable(false);
+        
+        
+        
+        setDialogLayout();
+        setDialogActionListeners(); 
+    }
+    
+    /**
+     * Sets layout for start dialog
+     */
+    public void setDialogLayout() {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         
         dialog.addWindowListener(new WindowAdapter() {
@@ -96,72 +117,76 @@ public class Client {
                 System.exit(0);
             }
         });
-        
-        final Container dialogContainer = new Container();
-        GroupLayout layout = new GroupLayout(dialogContainer);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-        dialogContainer.setLayout(layout);
-        
-        ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        
-        SequentialGroup hUsername = layout.createSequentialGroup();
-        final JTextField usernameTextField = new JTextField(10);
-        usernameTextField.setName("username");
-        JLabel usernameLabel = new JLabel("Username:");
-        hUsername.addComponent(usernameLabel).addComponent(usernameTextField);
-        
-        boardListModel = new DefaultListModel<String>();
+    	dialogContainer = new Container();
+    	layout = new GroupLayout(dialogContainer);
+    	layout.setAutoCreateGaps(true);
+    	layout.setAutoCreateContainerGaps(true);
+    	dialogContainer.setLayout(layout);
 
-        // Get boards from server and add to data model
-        // TODO: Handle case where there are no boards on server
-		try {
-		    getBoards();
-			for (int i=0; i<boards.length;i++) {
-	            boardListModel.addElement(boards[i]);
-	        }
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-        final JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
-        boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        boardList.setLayoutOrientation(JList.VERTICAL);
-        boardList.setVisibleRowCount(-1);
-        JScrollPane boardListScroller = new JScrollPane(boardList);
-        boardListScroller.setPreferredSize(new Dimension(100, 150));
-        
-        SequentialGroup hNewBoard = layout.createSequentialGroup();
-        JLabel newBoardLabel = new JLabel("New Board:");
-        newBoard = new JTextField(10);
-        newBoard.setName("newBoard");
-        JButton newBoardButton = new JButton("Add Board");
-        hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
-        
-        JButton startButton = new JButton("Start");
-        
-        hGroup.addGroup(hUsername).addComponent(boardListScroller).addGroup(hNewBoard).addComponent(startButton);
-        
-        ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        SequentialGroup vAll = layout.createSequentialGroup();
-        
-        ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v1.addComponent(usernameLabel).addComponent(usernameTextField);
-        
-        ParallelGroup v2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v2.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
-        
-        vAll.addGroup(v1).addComponent(boardListScroller).addGroup(v2).addComponent(startButton);
-        
-        vGroup.addGroup(vAll);
-        
-        layout.setHorizontalGroup(hGroup);
-        layout.setVerticalGroup(vGroup);
-        
-        dialog.setContentPane(dialogContainer);
-        dialog.pack();
-        dialog.setVisible(true);
-        
+    	ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+
+    	SequentialGroup hUsername = layout.createSequentialGroup();
+    	usernameTextField = new JTextField(10);
+    	usernameTextField.setName("username");
+    	usernameLabel = new JLabel("Username:");
+    	hUsername.addComponent(usernameLabel).addComponent(usernameTextField);
+
+    	boardListModel = new DefaultListModel<String>();
+
+    	// Get boards from server and add to data model
+    	try {
+    		getBoards();
+    		for (int i=0; i<boards.length;i++) {
+    			boardListModel.addElement(boards[i]);
+    		}
+    	} catch (Exception e1) {
+    		e1.printStackTrace();
+    	}
+
+    	boardList = new JList<String>(boardListModel); //data has type Object[]
+    	boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	boardList.setLayoutOrientation(JList.VERTICAL);
+    	boardList.setVisibleRowCount(-1);
+    	boardListScroller = new JScrollPane(boardList);
+    	boardListScroller.setPreferredSize(new Dimension(100, 150));
+
+    	SequentialGroup hNewBoard = layout.createSequentialGroup();
+    	newBoardLabel = new JLabel("New Board:");
+    	newBoard = new JTextField(10);
+    	newBoard.setName("newBoard");
+    	newBoardButton = new JButton("Add Board");
+    	hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
+
+    	startButton = new JButton("Start");
+
+    	hGroup.addGroup(hUsername).addComponent(boardListScroller).addGroup(hNewBoard).addComponent(startButton);
+
+    	ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+    	SequentialGroup vAll = layout.createSequentialGroup();
+
+    	ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+    	v1.addComponent(usernameLabel).addComponent(usernameTextField);
+
+    	ParallelGroup v2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+    	v2.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
+
+    	vAll.addGroup(v1).addComponent(boardListScroller).addGroup(v2).addComponent(startButton);
+
+    	vGroup.addGroup(vAll);
+
+    	layout.setHorizontalGroup(hGroup);
+    	layout.setVerticalGroup(vGroup);
+
+    	dialog.setContentPane(dialogContainer);
+    	dialog.pack();
+    	dialog.setVisible(true);
+    }
+    
+    /**
+     * Adds action listeners to start dialog
+     */
+    private void setDialogActionListeners() {
+
         startButton.addActionListener(new ActionListener() {
             public synchronized void actionPerformed(ActionEvent e) {
                 if (usernameTextField.getText().equals("")) {
@@ -232,7 +257,10 @@ public class Client {
             }
         });
     }
-    
+
+    /**
+     * Confirms exit of start dialog
+     */
     public void completeExit() {
         exitComplete = true;
     }
@@ -269,11 +297,7 @@ public class Client {
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (HeadlessException | InterruptedException
-                    | ExecutionException e) {
-                e.printStackTrace();
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -345,7 +369,7 @@ public class Client {
      * @return: true if username creation is successful, false if not
      */
     public boolean createUser(String username, String boardName) throws Exception {
-        makeRequest("check "+username+" "+boardName).join();
+        makeRequest("checkAndAddUser "+username+" "+boardName).join();
         userCheckMade = false;
         boolean timeout = false;
         int timeoutCounter = 0;
@@ -429,7 +453,7 @@ public class Client {
         if (newBoardMade.containsKey(newBoardName)) return false;
         newBoardMade.put(newBoardName, false);
         newBoardSuccessful.put(newBoardName, true);
-        makeRequest("new "+newBoardName).join();
+        makeRequest("newBoard "+newBoardName).join();
         boolean timeout = false;
         int timeoutCounter = 0;
         int maxAttempts = 100;
@@ -636,7 +660,7 @@ public class Client {
             public void run() {
                 try {
 					@SuppressWarnings("unused")
-                    Client client = new Client();
+					Client client = new Client("localhost", 4444);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
