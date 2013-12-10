@@ -14,7 +14,8 @@ import Command.Command;
  * communicates through the following grammar
  * 
  * Concurrency Argument:
- *   - this thread only performs actions on thread safe objects (Board, Server) 
+ *   - this thread only performs actions on thread safe objects (Board, Server)
+ *     (See Board.java and Server.java) 
  * 
  * @author Josh
  *
@@ -109,11 +110,11 @@ public class ServerProtocol implements Runnable {
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9\\.]+";
-    	String regex = "(boards)|(newBoard "+nameReg+")|(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
+    	String regex = "(boards)|(newBoard "+nameReg+")|"
+    			+ "(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
     			+ "(exit "+nameReg+")|(users "+nameReg+")|"
     			+ "(checkAndAddUser "+nameReg+" "+nameReg+")|"
-    			+ "(draw "+nameReg+"( "+nameReg+")+)|"
-    			+ "(users "+nameReg+")";
+    			+ "(draw "+nameReg+"( "+nameReg+")+)";
         
         if ( ! input.matches(regex)) {
             // invalid input
