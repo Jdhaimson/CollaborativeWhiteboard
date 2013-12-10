@@ -1,4 +1,4 @@
-package Command;
+package command;
 
 import static org.junit.Assert.*;
 
@@ -14,9 +14,9 @@ public class CommandTest {
     /*
      * Testing strategy:
      * 
-     * -Constructor
-     * -toString
-     * -checkBoardName
+     * -Constructor parses string correctly
+     * -toString makes the constructor object into the correct format
+     * -checkBoardName returns true for the right board name, false for the wrong one
      * -compare a canvas with a command invoked on it and a canvas just drawn on
      */
     

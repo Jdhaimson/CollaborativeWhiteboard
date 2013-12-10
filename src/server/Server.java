@@ -8,7 +8,8 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
-import Command.Command;
+import command.Command;
+
 
 public class Server {
     
@@ -24,7 +25,6 @@ public class Server {
      */
     public Server(int port) throws IOException {
     	serverSocket = new ServerSocket(port);
-    	this.newBoard("test");
     }
     
     
@@ -46,17 +46,6 @@ public class Server {
             // create new thread for each connection
             new Thread(new ServerProtocol(socket, this)).start();
         }
-    }
-    
-    /**
-     * Iterates through all the sockets and sends the command to each
-     * 
-     * @param socket
-     *            the one socket that sent the command to the server in the
-     *            first place and thus does not need to be updated
-     */
-    public synchronized void updateClients(String command) {
-        //TODO
     }
     
     /**
@@ -87,9 +76,6 @@ public class Server {
         }
     }
     
-    /**
-     * Test method
-     */
     public void sendDrawCommand(Command command) {
     	for (Socket client: clients) {
     		try {
@@ -160,7 +146,6 @@ public class Server {
      * @param boardName: the board they have chosen to enter
      */
     public synchronized void enter(String username, String boardName) {
-        System.out.println(boardName);
         Board board = boards.get(boardName);
         board.addUser(username);
     }
@@ -211,8 +196,16 @@ public class Server {
         return clients;
     }
     
-    public Board getCommands(String boardName) {
+    public Board getBoard(String boardName) {
         return boards.get(boardName);
+    }
+    
+    public Hashtable<String, Board> getBoardsHashtable() {
+        return boards;
+    }
+    
+    public void close() throws IOException {
+        serverSocket.close();
     }
     
     public static void main(String[] args) {
@@ -221,7 +214,7 @@ public class Server {
 			server = new Server(4444);
 			server.serve();
 		} catch (IOException e) {
-			System.out.println("You pooped up");
+			System.out.println("Error in starting server.");
 			e.printStackTrace();
 		}
     	

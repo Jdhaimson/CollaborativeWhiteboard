@@ -452,7 +452,8 @@ public class Canvas extends JFrame {
             
             // to make up for the height of the menu
             int menuHeight = 73;
-            drawLineSegmentAndCall(lastX, lastY - menuHeight, x, y - menuHeight, color.getRGB(), client.getCurrentWidth());
+            int weirdDisplacement = 6;
+            drawLineSegmentAndCall(lastX-weirdDisplacement, lastY - menuHeight, x-weirdDisplacement, y - menuHeight, color.getRGB(), client.getCurrentWidth());
             lastX = x;
             lastY = y;
         }

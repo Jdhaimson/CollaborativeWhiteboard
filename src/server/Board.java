@@ -2,7 +2,8 @@ package server;
 
 import java.util.LinkedList;
 
-import Command.Command;
+import command.Command;
+
 
 public class Board {
     // image where the user's drawing is stored
@@ -60,6 +61,10 @@ public class Board {
     
     public String[] getUsers() {
         return users;
+    }
+    
+    public void setUsers(String[] newUsers) {
+        users = newUsers;
     }
 
 }

@@ -7,7 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
 
-import Command.Command;
+import command.Command;
+
 
 public class ServerProtocol implements Runnable {
     

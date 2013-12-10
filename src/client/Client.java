@@ -34,7 +34,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import Command.Command;
+
+import command.Command;
 
 public class Client {
     
@@ -620,6 +621,10 @@ public class Client {
     
     public boolean checkForCorrectBoard(String boardName) {
         return boardName.equals(currentBoardName);
+    }
+    
+    public Socket getSocket() {
+        return socket;
     }
     
     /*
