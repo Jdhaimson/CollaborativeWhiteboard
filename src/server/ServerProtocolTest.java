@@ -121,7 +121,7 @@ public class ServerProtocolTest {
         
         String input = "switch user board1 board2";
         String output = protocol.testHandleRequest(input);
-        
+   
         assertEquals("switch user board1 board2" + newLine,output);
         
         server.shutDown();
