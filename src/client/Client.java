@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +10,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
+
 import javax.swing.SwingUtilities;
+
 import Command.Command;
 
 public class Client {
@@ -23,6 +26,7 @@ public class Client {
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
     private float currentWidth = 10;
+    private BufferedImage drawingBuffer;
     
     // used for comm
     private String[] boards = {};
@@ -33,6 +37,7 @@ public class Client {
     private boolean usersUpdated;
     private String[] users = {};
     private boolean exitComplete;
+    private boolean isErasing;
     
     //the socket with which the user connects to the client
     private Socket socket;
@@ -51,8 +56,25 @@ public class Client {
         receiveProtocol = new ClientReceiveProtocol(in, this);
         receiveThread = new Thread(receiveProtocol);
         receiveThread.start();
-        clientGUI = new ClientGUI(this);
+        clientGUI = new ClientGUI(this, 800, 600);
         addShutdownHook();
+    }
+    
+    
+    public BufferedImage getDrawingBuffer() {
+    	return drawingBuffer;
+    }
+    
+    public void setDrawingBuffer(BufferedImage newImage) {
+    	drawingBuffer = newImage;
+    }
+    
+    public void setIsErasing(boolean newIsErasing) {
+    	isErasing = newIsErasing;
+    }
+    
+    public boolean isErasing() {
+    	return isErasing;
     }
 
     /**
@@ -157,7 +179,7 @@ public class Client {
         try {
             makeRequest("switch "+username+" "+currentBoardName+" "+newBoardName);
             currentBoardName = newBoardName;
-            clientGUI.getCanvas().updateCurrentUserBoard();
+            getCanvas().updateCurrentUserBoard();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -165,7 +187,7 @@ public class Client {
     }
     
     public void applyCommand(Command command) {
-        command.invokeCommand(clientGUI.getCanvas());
+        command.invokeCommand(getCanvas());
     }
     
     public void makeDrawRequest(String command) throws IOException {
@@ -225,7 +247,7 @@ public class Client {
      */
     public void commandCanvas(String boardName, Command command) {
         if (command.checkBoardName(boardName)) {
-            command.invokeCommand(clientGUI.getCanvas());
+            command.invokeCommand(getCanvas());
         }
     }
     

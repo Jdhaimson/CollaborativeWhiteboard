@@ -1,34 +1,51 @@
 package client;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.util.EventListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.colorchooser.ColorSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
-public class ClientGUI {
+public class ClientGUI extends JFrame {
 
 	private final Client client;
-	
-    //the board the client has selected and is drawing on
-    private Canvas canvas;
-    //the GUI for this client
-    private JFrame frame;
+
 
 	// Start Dialog GUI objects
 	private JDialog dialog;
@@ -43,11 +60,31 @@ public class ClientGUI {
 	private JScrollPane boardListScroller;
 	private JButton newBoardButton;
 	private JButton startButton;
+	
+    //the GUI for this client
+    private JFrame frame;
+    private JLabel currentUserBoard;
+    
+    private Canvas canvas;
 
-	public ClientGUI(Client client) {
+	public ClientGUI(Client client, int width, int height) {
 		this.client = client;
 		startDialog();
+        
 	}
+	
+	public void setupCanvas() {
+        this.setTitle("Whiteboard");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLayout(new BorderLayout());
+        this.setResizable(false); 
+        canvas = new Canvas(client);
+        canvas.addDrawingController(new DrawingController(client));
+        this.addMenuBar();
+        this.add(canvas, BorderLayout.CENTER);
+        this.pack();
+        this.setVisible(true);
+    }
 
 
 	/**
@@ -171,21 +208,7 @@ public class ClientGUI {
 		return canvas;
 	}
 
-    public void setupCanvas() {
-        frame = new JFrame("Freehand Canvas");
-        frame.setTitle("Whiteboard");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setResizable(false);
-        makeNewCanvas();
-    }
     
-    /**
-     * Gives this client a blank, new Canvas
-     */
-    public void makeNewCanvas() {
-        canvas = new Canvas(800, 600, client);
-    }
 
 	class NewBoardWorker extends SwingWorker<Boolean, Object> {
 
@@ -284,4 +307,239 @@ public class ClientGUI {
 			}
 		});
 	}
+	
+    private void addMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(getUsersMenu());
+        menuBar.add(getBoardsMenu());
+        menuBar.add(getModeMenu());
+        menuBar.add(getColorsMenu());
+        menuBar.add(getSlider());
+        menuBar.add(Box.createHorizontalGlue());
+        currentUserBoard = canvas.getCurrentUserBoard();
+        menuBar.add(currentUserBoard);
+        menuBar.add(Box.createHorizontalGlue());
+        this.setJMenuBar(menuBar);
+    }
+    
+    /**
+     * Add the mode menu to the menu mar
+     * @return JMenu representing the mode menu
+     */
+    private JMenu getModeMenu() {
+        // Icon next to Mode
+        final ImageIcon eraserIcon = new ImageIcon("../whiteboard/docs/icons/eraser.png");
+        final ImageIcon pencilIcon = new ImageIcon("../whiteboard/docs/icons/pencil.png");
+        
+        final JMenu mode = new JMenu("Mode");
+        mode.setIcon(pencilIcon);
+        
+        JMenuItem drawMenuItem = new JMenuItem("Draw", pencilIcon);
+        drawMenuItem.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                client.setIsErasing(false);
+                mode.setIcon(pencilIcon);
+            }});
+        JMenuItem eraseMenuItem = new JMenuItem("Erase", eraserIcon);
+        eraseMenuItem.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                client.setIsErasing(true);
+                mode.setIcon(eraserIcon);
+            }});
+        mode.add(drawMenuItem);
+        mode.addSeparator();
+        mode.add(eraseMenuItem);
+        
+        
+        
+        return mode;
+    }
+    
+    public void setCurrentUserBoard(JLabel newBoard) {
+    	currentUserBoard = newBoard;
+    }
+    
+    /**
+     * Add the users menu to the menu mar
+     * @return JMenu representing the users menu
+     */
+    private JMenu getUsersMenu() {
+        final JMenu usersMenu = new JMenu("Users");
+        //List of Users
+        try {
+            for (String user: client.getUsers()) {
+                JLabel label = new JLabel(user);
+                label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                usersMenu.add(label);
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        usersMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuCanceled(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuSelected(MenuEvent arg0) {
+                usersMenu.removeAll();
+                try {
+                    for (String user: client.getUsers()) {
+                        JLabel label = new JLabel(user);
+                        label.setBorder(BorderFactory.createEmptyBorder(2, 5, 3, 5));
+                        usersMenu.add(label);
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+        return usersMenu;
+    }
+    
+    /**
+     * Add the boards menu to the menu mar
+     * @return JMenu representing the boards menu
+     */
+    private JMenu getBoardsMenu() {
+      //add List of Boards
+        final JMenu boards = new JMenu("Board(s)");
+
+        JMenuItem newBoardButton = new JMenuItem("New Board");
+        boards.add(newBoardButton);
+        newBoardButton.addActionListener(new  ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                client.getClientGUI().newBoardDialog();
+            }
+        });
+        boards.addSeparator();
+        
+        //List of Boards
+        String[] listBoards = {};
+		try {
+			listBoards = client.getBoards();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        for (final String board: listBoards) {
+            JMenuItem boardChoice = new JMenuItem(board);
+            boardChoice.addActionListener(new  ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    canvas.switchBoard(board);
+                    
+                }
+            });
+            boards.add(boardChoice);
+        }
+        
+        
+        boards.addMenuListener(new MenuListener() {
+            @Override
+            public void menuCanceled(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent arg0) {
+            }
+
+            @Override
+            public void menuSelected(MenuEvent arg0) {
+            	for (int i=boards.getItemCount()-1; i>1; i--) {
+            		boards.remove(i);
+            	}
+                try {
+                    for (final String board: client.getBoards()) {
+                        JMenuItem boardChoice = new JMenuItem(board);
+                        boardChoice.addActionListener(new  ActionListener() {
+                            public void actionPerformed(ActionEvent event) {
+                                canvas.switchBoard(board);
+                            }
+                        });
+                        boards.add(boardChoice);
+                    }
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        });
+        
+        return boards;
+    }
+    
+
+    
+    /**
+     * Add the colors menu to the menu bar
+     * @return JMenu representing the colors menu
+     */
+    private JMenu getColorsMenu() {
+        class ColorChangeListener implements ChangeListener {
+            JMenu colors;
+            public ColorChangeListener(JMenu colors) {
+                this.colors = colors;
+            }
+            
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ColorSelectionModel model = (ColorSelectionModel) e.getSource();
+                Color currentColor = model.getSelectedColor();
+                client.setCurrentColor(currentColor);
+                colors.setBorder(BorderFactory.createLineBorder(currentColor,2));
+            }
+        }
+        //add Colors
+        
+        JMenu colors = new JMenu("Paint Color");
+        
+        JColorChooser chooser = new JColorChooser(client.getCurrentColor());
+        colors.add(chooser);
+        chooser.getSelectionModel().addChangeListener(new ColorChangeListener(colors));
+        chooser.setPreviewPanel(new JPanel());
+        colors.setBorder(BorderFactory.createLineBorder(client.getCurrentColor(),2));
+        
+        //remove panels
+        AbstractColorChooserPanel[] panels = chooser.getChooserPanels();
+        for (AbstractColorChooserPanel accp : panels) {
+            if (!accp.getDisplayName().equals("Swatches")) {
+                chooser.removeChooserPanel(accp);
+            }
+        }
+        return colors;
+    }
+    /**
+     * add slider to the menu bar
+     * @return JSlider representing the slider
+     */
+    private JSlider getSlider() {
+        class SliderChangeListener implements ChangeListener {
+
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                if (!source.getValueIsAdjusting()) {
+                    float weight = (float)source.getValue();
+                    client.setCurrentWidth(weight);
+                }
+                
+            }
+        }
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 50, (int)Math.round(client.getCurrentWidth()));
+
+        slider.addChangeListener(new SliderChangeListener());
+        slider.setMajorTickSpacing(10);
+        slider.setMinorTickSpacing(2);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        slider.setVisible(true);
+        
+        return slider;
+    }
+    
+    
 }
