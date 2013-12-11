@@ -45,7 +45,8 @@ import javax.swing.event.MenuListener;
 public class ClientGUI extends JFrame {
 
 	private final Client client;
-
+	private final int WIDTH = 800;
+	private final int HEIGHT = 600;
 
 	// Start Dialog GUI objects
 	private JDialog dialog;
@@ -67,7 +68,7 @@ public class ClientGUI extends JFrame {
     
     private Canvas canvas;
 
-	public ClientGUI(Client client, int width, int height) {
+	public ClientGUI(Client client) {
 		this.client = client;
 		startDialog();
         
@@ -76,6 +77,7 @@ public class ClientGUI extends JFrame {
 	public void setupCanvas() {
         this.setTitle("Whiteboard");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setLayout(new BorderLayout());
         this.setResizable(false); 
         canvas = new Canvas(client);
@@ -476,9 +478,7 @@ public class ClientGUI extends JFrame {
         
         return boards;
     }
-    
-
-    
+  
     /**
      * Add the colors menu to the menu bar
      * @return JMenu representing the colors menu
