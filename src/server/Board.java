@@ -15,31 +15,13 @@ import command.Command;
  * 
  * Concurrency Argument:
  *   - This class is made concurrent by the monitor pattern
- * 
- * @author Josh
  *
  */
 public class Board {
 
     private LinkedList<Command> commands = new LinkedList<Command>();
     private List<String> users = new LinkedList<String>();
-    
-    /**
-     * Returns all commands ever sent to this board
-     * @return
-     */
-    public synchronized LinkedList<Command> getCommands() {
-        return commands;
-    }
-    
-    /**
-     * Adds a command to the board
-     * @param command
-     */
-    public synchronized void addCommand(Command command) {
-        this.commands.add(command);
-    }
-    
+
     /**
      * Deletes user from board if user is in board
      * @param username
@@ -72,15 +54,35 @@ public class Board {
     }
     
     /**
-     * Returns list of all users in board
+     * Returns all commands ever sent to this board
      * @return
+     */
+    public synchronized LinkedList<Command> getCommands() {
+        return commands;
+    }
+    
+    /**
+     * Adds a command to the board
+     * @param command
+     */
+    public synchronized void addCommand(Command command) {
+        this.commands.add(command);
+    }
+    
+    /**
+     * Returns list of all users in board
+     * @return all users as an array
      */
     public synchronized String[] getUsers() {
         String[] usersArray = new String[users.size()];
     	return users.toArray(usersArray);
     }
     
-    public void setUsers(String[] newUsers) {
+    /**
+     * Sets the users (shortcut for testing)
+     * @param newUsers: the new array to set the users to
+     */
+    public synchronized void setUsers(String[] newUsers) {
         LinkedList<String> usersList = new LinkedList<String>();
         usersList.addAll(Arrays.asList(newUsers));
         users = usersList;

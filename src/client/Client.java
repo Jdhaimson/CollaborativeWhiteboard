@@ -93,40 +93,44 @@ public class Client {
             @Override
             public void run()
             {
-                try {
-                	// kill receiving thread and wait for it to close out
-                    if (username!= null) {
-                        try {
-                            exitComplete = false;
-                            makeRequest("exit "+username).join();
-                            
-                            boolean timeout = false;
-                            int timeoutCounter = 0;
-                            int maxAttempts = 100;
-                            int timeoutDelay = 10;
-                            while(!exitComplete && !timeout) {
-                                timeoutCounter++;
-                                if (timeoutCounter >= maxAttempts) {
-                                    timeout = true;
-                                    System.out.println("timeout on exit");
-                                }
-                                Thread.sleep(timeoutDelay);
-                            }
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-					receiveProtocol.kill();
-					socket.shutdownInput();
-					socket.shutdownOutput();
-					
-                	socket.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+                kill();
             }
         });
+    }
+    
+    public void kill() {
+        try {
+            // kill receiving thread and wait for it to close out
+            if (username!= null) {
+                try {
+                    exitComplete = false;
+                    makeRequest("exit "+username).join();
+                    
+                    boolean timeout = false;
+                    int timeoutCounter = 0;
+                    int maxAttempts = 100;
+                    int timeoutDelay = 10;
+                    while(!exitComplete && !timeout) {
+                        timeoutCounter++;
+                        if (timeoutCounter >= maxAttempts) {
+                            timeout = true;
+                            System.out.println("timeout on exit");
+                        }
+                        Thread.sleep(timeoutDelay);
+                    }
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            receiveProtocol.kill();
+            socket.shutdownInput();
+            socket.shutdownOutput();
+            
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

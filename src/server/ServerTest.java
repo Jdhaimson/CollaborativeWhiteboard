@@ -24,7 +24,7 @@ public class ServerTest {
      * -Update board adds a command to a board
      * -Get users for a board with no users returns an empty string
      * -Get users for a board with users returns the users separated with spaces
-     * -Switch boards successfully deletes a user from a board and adds it to the correct one and returns the correct list of commands
+     * -Switch boards successfully deletes a user from a board and adds it to the correct one
      * -Exit successfully deletes the user from the correct board
      * -Enter adds the user to the correct board
      * -Get boards when there are no boards returns an empty string
@@ -68,7 +68,7 @@ public class ServerTest {
     public void updateBoardTest() throws IOException {
         Server server = makeServer();
         server.newBoard("board1");
-        Command command = new Command("draw board1 drawLineSegment 50 50 60 60 0 10.0");
+        Command command = new Command("draw board1 drawLineSegment 50 50 60 60 0 10.0".split(" "));
         server.updateBoard("board1", command);
         LinkedList<Command> commandList = new LinkedList<Command>();
         commandList.add(command);
@@ -94,13 +94,12 @@ public class ServerTest {
     public void switchBoardTest() throws IOException {
         Server server = makeServer();
         server.newBoard("board1");
-        Command command = new Command("draw board1 drawLineSegment 50 50 60 60 0 10.0");
+        Command command = new Command("draw board1 drawLineSegment 50 50 60 60 0 10.0".split(" "));
         server.updateBoard("board1", command);
         server.newBoard("board2");
         server.getBoard("board2").setUsers(new String[] {"jessica"});
         List<Command> commandList = new LinkedList<Command>();
         commandList.add(command);
-        assertTrue(server.switchBoard("jessica", "board2", "board1").equals(commandList));
         assertTrue(Arrays.equals(server.getBoard("board1").getUsers(), new String[] {"jessica"}));
         assertTrue(Arrays.equals(server.getBoard("board2").getUsers(), new String[0]));
         server.close();

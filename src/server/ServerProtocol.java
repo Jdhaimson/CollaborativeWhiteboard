@@ -18,7 +18,6 @@ import command.Command;
  *   - this thread only performs actions on thread safe objects (Board, Server)
  *     (See Board.java and Server.java) 
  * 
- * @author Josh
  *
  */
 public class ServerProtocol implements Runnable {
@@ -109,7 +108,7 @@ public class ServerProtocol implements Runnable {
      * @throws IOException 
      */
     private String handleRequest(String input) throws IOException, IllegalArgumentException {
-        
+        System.out.println(input);
     	String nameReg = "[a-zA-Z0-9\\.]+";
     	String regex = "(boards)|(newBoard "+nameReg+")|"
     			+ "(switch "+nameReg+" "+nameReg+" "+nameReg+")|"
@@ -119,7 +118,7 @@ public class ServerProtocol implements Runnable {
         
         if ( ! input.matches(regex)) {
             // invalid input
-        	System.out.println("Invalid input");
+        	System.out.println("Invalid input: "+input);
             return null;
         }
 
@@ -187,7 +186,8 @@ public class ServerProtocol implements Runnable {
         String oldBoardName = tokens[2];
         String newBoardName = tokens[3];
         String newLine = System.getProperty("line.separator");
-        List<Command> commands = server.switchBoard(userName, oldBoardName, newBoardName);
+        server.switchBoard(userName, oldBoardName, newBoardName);
+        List<Command> commands = server.getCommands(newBoardName);
     	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
     	for (Command command: commands) {
     	    str += command.toString() + newLine;

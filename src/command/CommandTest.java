@@ -21,9 +21,9 @@ public class CommandTest {
      */
     
     String noArguments = "draw board1 drawNothing";
-    Command noArgumentsObject = new Command(noArguments);
+    Command noArgumentsObject = new Command(noArguments.split(" "));
     String lineSegment = "draw board2 drawLineSegment 50 50 60 60 0 10";
-    Command lineSegmentObject = new Command(lineSegment);
+    Command lineSegmentObject = new Command(lineSegment.split(" "));
     
     @Test
     public void testConstructor() {

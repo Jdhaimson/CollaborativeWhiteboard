@@ -42,8 +42,6 @@ public class Server {
     	addShutDownHook();
     }
     
-    
- 
     /**
      * Run the server, listening for client connections and handling them.
      * Never returns unless an exception is thrown.
@@ -76,6 +74,24 @@ public class Server {
     }
     
     /**
+     * Iterates through all the sockets and sends the command to each
+     * 
+     * @param Command - command to be sent to all clients 
+     */
+    public void sendCommandToClients(Command command) {
+        for (Socket client: clients) {
+            try {
+                if (!client.isClosed()) {
+                    PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+                    out.println(command.toString());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
      * Checks if the board name is unique
      * Creates a new board with the specified board name
      * 
@@ -92,21 +108,16 @@ public class Server {
     }
     
     /**
-     * Iterates through all the sockets and sends the command to each
+     * Removes the user from the old board and adds the user to the new board.
      * 
-     * @param Command - command to be sent to all clients 
+     * @param username: the username of the user making the switch
+     * @param oldBoardName: name of the board the user is switching from
+     * @param newBoardName: the name of the board the user is switching to
+     * @return: List of Commands of the new Board the user is switching to           
      */
-    public void sendCommandToClients(Command command) {
-    	for (Socket client: clients) {
-			try {
-	    		if (!client.isClosed()) {
-					PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-					out.println(command.toString());
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-    	}
+    public void switchBoard(String username, String oldBoardName, String newBoardName) {
+        boards.get(oldBoardName).deleteUser(username);
+        boards.get(newBoardName).addUser(username);
     }
     
     /**
@@ -131,41 +142,6 @@ public class Server {
     }
     
     /**
-     * Removes the user from the old board and adds the user to the new board.
-     * 
-     * @param username: the username of the user making the switch
-     * @param oldBoardName: name of the board the user is switching from
-     * @param newBoardName: the name of the board the user is switching to
-     * @return: List of Commands of the new Board the user is switching to           
-     */
-    public List<Command> switchBoard(String username, String oldBoardName, String newBoardName) {
-        boards.get(oldBoardName).deleteUser(username);
-        boards.get(newBoardName).addUser(username);
-        return boards.get(newBoardName).getCommands();
-    }
-    
-    /**
-     * Removes the user from all boards
-     * @param username: the username of the user exiting
-     */
-    public synchronized void exit(String username) {
-        for(String boardName: boards.keySet()) {
-            Board board = boards.get(boardName);
-            board.deleteUser(username);
-        }
-    }
-    
-    /**
-     * Adds the user to a board for the first time
-     * @param username: the entering user
-     * @param boardName: the board they have chosen to enter
-     */
-    public synchronized void enter(String username, String boardName) {
-        Board board = boards.get(boardName);
-        board.addUser(username);
-    }
-    
-    /**
      * Gets a list of all the board names
      * @return: a list of a all the board names
      */
@@ -174,11 +150,11 @@ public class Server {
        
         StringBuilder boardsString = new StringBuilder("");
         for (String board: boardsArray) {
-        	boardsString.append(board + " ");
+            boardsString.append(board + " ");
         }
         
         if(boardsString.length() > 0) {
-        	boardsString.deleteCharAt(boardsString.length() - 1);
+            boardsString.deleteCharAt(boardsString.length() - 1);
         }
         
         return boardsString.toString();
@@ -207,24 +183,24 @@ public class Server {
     }
     
     /**
-     * Returns clients connected to server
-     * @return
+     * Adds the user to a board for the first time
+     * @param username: the entering user
+     * @param boardName: the board they have chosen to enter
      */
-    public List<Socket> getClients() {
-        return clients;
+    public synchronized void enter(String username, String boardName) {
+        Board board = boards.get(boardName);
+        board.addUser(username);
     }
     
-
-    public Board getBoard(String boardName) {
-        return boards.get(boardName);
-    }
-    
-    public Hashtable<String, Board> getBoardsHashtable() {
-        return boards;
-    }
-    
-    public void close() throws IOException {
-        serverSocket.close();
+    /**
+     * Removes the user from all boards
+     * @param username: the username of the user exiting
+     */
+    public synchronized void exit(String username) {
+        for(String boardName: boards.keySet()) {
+            Board board = boards.get(boardName);
+            board.deleteUser(username);
+        }
     }
     
     /**
@@ -232,8 +208,33 @@ public class Server {
      * @param boardName
      * @return
      */
-    public Board getCommands(String boardName) {
+    public LinkedList<Command> getCommands(String boardName) {
+        return boards.get(boardName).getCommands();
+    }
+    
+    /**
+     * Returns clients connected to server
+     * @return
+     */
+    public List<Socket> getClients() {
+        return clients;
+    }
+    
+    /**
+     * Get a certain board from the server
+     * @param boardName: the name of the board to get
+     * @return the board
+     */
+    public Board getBoard(String boardName) {
         return boards.get(boardName);
+    }
+    
+    /**
+     * Gets the hashtable of board names associated with boards
+     * @return the hashtable
+     */
+    public Hashtable<String, Board> getBoardsHashtable() {
+        return boards;
     }
     
     /**
@@ -245,6 +246,10 @@ public class Server {
     		client.close();
     	}
     	serverSocket.close();
+    }
+    
+    public void close() throws IOException {
+        serverSocket.close();
     }
     
     public void addShutDownHook() {
@@ -297,7 +302,6 @@ public class Server {
             System.err.println("usage: Server [--port PORT]");
             return;
         }
-    	
     	
     	// Try to launch the server
 		try {

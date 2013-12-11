@@ -27,21 +27,11 @@ public class Command {
     }
     
     /**
-     * Parses a string received from the client that has already been determined to be a draw command
-     * @param commandString: the string in the format "draw boardName command arg1 arg2 arg3..."
-     * @return a Command object with the command and the arguments
+     * Straightforwardly takes the given parameters and makes a command object out of them
+     * @param boardName: name of the board the command is for
+     * @param command: name of the command
+     * @param arguments: the list of arguments as strings
      */
-    public Command(String commandString) {
-        String[] elements = commandString.split(" ");
-        String[] arguments = new String[elements.length-3];
-        for (int i=3; i<elements.length;i++) {
-            arguments[i-3] = elements[i];
-        }
-        this.command = elements[2];
-        this.boardName = elements[1];
-        this.arguments = arguments;
-    }
-    
     public Command(String boardName, String command, String[] arguments) {
         this.boardName = boardName;
         this.command = command;
@@ -101,6 +91,11 @@ public class Command {
         }
     }
     
+    /**
+     * Compares the board name given to make sure the command is for the same board
+     * @param compareBoardName: the board name the command should be for
+     * @return whether or not this command is for the board name given
+     */
     public boolean checkBoardName(String compareBoardName) {
         return this.boardName.equals(compareBoardName);
     }

@@ -43,7 +43,6 @@ public class ClientReceiveProtocol implements Runnable {
     private void handleConnection(BufferedReader in) throws IOException {        
 
         for (String line = in.readLine(); line != null; line = in.readLine()) {
-        	System.out.println("Handle Request: " + line);
         	handleRequest(line);                
         }
     }
@@ -74,31 +73,38 @@ public class ClientReceiveProtocol implements Runnable {
 		    	        +"(newBoard "+nameReg+" (true|false))|"
 		        		+ "(switch "+nameReg+" "+nameReg+")|(testHello)";
     	
-    	System.out.println("input: "+input);
     	// make sure it's a valid input
         if (input.matches(regex)) {
             try {
 	        	String[] tokens = input.split(" ");
 	        	
+	        	//take the boards from the response and set them to the list of boards
 	            if (tokens[0].equals("boards")) {
 					client.setBoards(client.parseBoardsFromServerResponse(input));
 	            } 
+	            //parse from the response whether the board has been created
 	            else if (tokens[0].equals("newBoard")) {
 	                client.parseNewBoardFromServerResponse(input);
 	            } 
+	            //parse from the response whether the new user has entered successfully
 	            else if (tokens[0].equals("checkAndAddUser")) {
 	                client.parseNewUserFromServerResponse(input);
 	            } 
+	            //is the set of users is for the correct board
+	            //parse the users from the response and set them to the list of users
 	            else if (tokens[0].equals("users")) {
 	                if (client.checkForCorrectBoard(input.split(" ")[1])) {   
 	                    client.setUsers(client.parseUsersFromServerResponse(input));
 	                }
 	            } 
+	            //when the response is received,the client has exited the server and the threads can be stopped
 	            else if (tokens[0].equals("exit")) {
 	                client.completeExit();
 	            } 
+	            //check that the draw command is for this board
+	            //invoke the command received on the client's canvas
 	            else if (tokens[0].equals("draw")) {
-	                Command command = new Command(input);
+	                Command command = new Command(input.split(" "));
 	                if (command.checkBoardName(client.getCurrentBoardName())) {
 	                    client.applyCommand(command);
 	                }
@@ -108,28 +114,6 @@ public class ClientReceiveProtocol implements Runnable {
             }
         }
    
-    }
- 
-    
-    /**
-     * Checks that the board is the correct one, parses the message into an array of users and calls client.setCanvasUsers
-     * @param usersMessage: the message in the format "users boardName user1 user2 user3..."
-     */
-    public void updateUsers(String usersMessage) {
-    }
-    
-    /**
-     * Checks that the board is the correct one, parses the message into an array of boards and calls client.setBoards
-     * @param boardsMessage: the message in the format "boards boardName board1 board2 board3..."
-     */
-    public void updateBoards(String boardsMessage) {
-    }
-    
-    /**
-     * Uses the Command class to create a command object and calls client.updateCanvasCommand
-     * @param commandMessage: the message in the format "draw boardName command param1 param2 param3..."
-     */
-    public void commandCanvas(String commandMessage) {
     }
 
     /**

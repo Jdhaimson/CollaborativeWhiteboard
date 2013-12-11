@@ -1,27 +1,17 @@
 package client;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.EventListener;
 
 import javax.swing.*;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.colorchooser.ColorSelectionModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
+
 
 
 /**
@@ -30,7 +20,11 @@ import javax.swing.event.MenuListener;
  */
 
 public class Canvas extends JPanel {
-	// image where the user's drawing is stored
+	/**
+     * 
+     */
+    private static final long serialVersionUID = 5038857933002404875L;
+    // image where the user's drawing is stored
 	
 	private final Client client;
 	private EventListener currentListener;
@@ -54,21 +48,15 @@ public class Canvas extends JPanel {
 	}
 
 
-	/*
+	/**
 	 * Make the drawing buffer and draw some starting content for it.
 	 */
 	private void makeDrawingBuffer() {
 		client.setDrawingBuffer(new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB));
 		fillWithWhite();
 	}
-	/*
-        public void setDrawingBuffer(BufferedImage newImage) {
-            drawingBuffer = newImage;
-            repaint();
-        }
-	 */
 
-	/*
+	/**
 	 * Make the drawing buffer entirely white.
 	 */
 	private void fillWithWhite() {
@@ -82,7 +70,7 @@ public class Canvas extends JPanel {
 		this.repaint();
 	}
 
-	/*
+	/**
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in
 	 * pixels relative to the upper-left corner of the drawing buffer.
 	 */
@@ -95,7 +83,7 @@ public class Canvas extends JPanel {
 		}
 	}
 
-	/*
+	/**
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in
 	 * pixels relative to the upper-left corner of the drawing buffer.
 	 */
@@ -110,21 +98,17 @@ public class Canvas extends JPanel {
 		// have to notify Swing to repaint this component on the screen.
 		this.repaint();
 	}
-
+	
+	/**
+	 * Updates the label showing the current username and the current board name
+	 */
 	public void updateCurrentUserBoard() {
         String user = client.getUsername();
         String board = client.getCurrentBoardName();
         client.getClientGUI().setCurrentUserBoard(new JLabel("Hi, " + user + ". This board is: " + board));
     }
     
-    public JLabel getCurrentUserBoard() {
-        String user = client.getUsername();
-        String board = client.getCurrentBoardName();
-        
-        return new JLabel("Hi, " + user + ". This board is: " + board);
-    }
-    
-    /*
+    /**
      * Add the mouse listener that supports the user's freehand drawing.
      */
     public void addDrawingController(EventListener listener) {
@@ -137,6 +121,10 @@ public class Canvas extends JPanel {
         addMouseMotionListener((MouseMotionListener) currentListener);
     }
     
+    /**
+     * Resets the drawing buffer to be blank and calls switch canvas on the client
+     * @param board
+     */
     public void switchBoard(String board) {
     	client.setDrawingBuffer(new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB));
         final Graphics2D g = (Graphics2D) client.getDrawingBuffer().getGraphics();
