@@ -18,12 +18,9 @@ import javax.swing.*;
  */
 
 public class Canvas extends JPanel {
-	/**
-     * 
-     */
-    private static final long serialVersionUID = 5038857933002404875L;
-    // image where the user's drawing is stored
-	
+    
+	// image where the user's drawing is stored
+	private static final long serialVersionUID = 2L;
 	private final Client client;
 	private EventListener currentListener;
 

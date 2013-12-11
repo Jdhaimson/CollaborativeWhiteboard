@@ -163,7 +163,7 @@ public class ServerProtocol implements Runnable {
      * @return
      */
     public String boards(String[] tokens) {
-    	return "boards " + server.getBoards();
+    	return "boards" + server.getBoards();
     }
     
     /**

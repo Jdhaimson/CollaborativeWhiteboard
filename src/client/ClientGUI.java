@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
@@ -41,8 +40,8 @@ import javax.swing.event.MenuListener;
 
 public class ClientGUI extends JFrame {
 
-    private static final long serialVersionUID = 7640436227666832625L;
-    private final Client client;
+	private static final long serialVersionUID = 1L;
+	private final Client client;
 	private final int WIDTH = 800;
 	private final int HEIGHT = 600;
 
@@ -59,6 +58,7 @@ public class ClientGUI extends JFrame {
 	private JScrollPane boardListScroller;
 	private JButton newBoardButton;
 	private JButton startButton;
+
     private JLabel currentUserBoard;
     
     private Canvas canvas;

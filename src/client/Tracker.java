@@ -20,7 +20,7 @@ public class Tracker {
 	 * Setter
 	 * @param value
 	 */
-	public void setValue(boolean value){
+	public synchronized void setValue(boolean value){
 		this.value = value;
 	}
 	
@@ -28,7 +28,7 @@ public class Tracker {
 	 * Getter
 	 * @return
 	 */
-	public boolean getValue() {
+	public synchronized boolean getValue() {
 		return value;
 	}
 }

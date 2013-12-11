@@ -143,7 +143,7 @@ public class Server {
     
     /**
      * Gets a list of all the board names
-     * @return: a list of a all the board names
+     * @return: a String listing all of the board names with a space in front
      */
     public synchronized String getBoards() {
         String[] boardsArray = boards.keySet().toArray(new String[0]);
