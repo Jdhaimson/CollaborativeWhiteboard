@@ -15,7 +15,8 @@ import org.junit.Test;
 public class ClientSendProtocolTest {
 	/*
 	 * Testing strategy:
-	 * - Test that we can receive a message sent out over the 
+	 * - Test that we can receive a message sent out over the the send protocol
+	 *   without interruption
 	 */
 
 	@Test
