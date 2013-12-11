@@ -1,8 +1,10 @@
 package client;
 
-public class GUITest {
+public class ClientGUITest {
     
     /*
+     * @category no_didit
+     * 
      * Testing strategy:
      * 
      *  Start dialog (window to choose username and initial board)

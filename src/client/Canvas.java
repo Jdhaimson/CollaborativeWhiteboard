@@ -12,8 +12,6 @@ import java.util.EventListener;
 
 import javax.swing.*;
 
-
-
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
