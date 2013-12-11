@@ -56,7 +56,7 @@ public class Client {
         receiveProtocol = new ClientReceiveProtocol(in, this);
         receiveThread = new Thread(receiveProtocol);
         receiveThread.start();
-        clientGUI = new ClientGUI(this, 800, 600);
+        clientGUI = new ClientGUI(this);
         addShutdownHook();
     }
     
