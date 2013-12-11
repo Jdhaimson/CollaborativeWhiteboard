@@ -4,14 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
-import java.util.EventListener;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
@@ -44,6 +38,7 @@ import javax.swing.event.MenuListener;
 
 public class ClientGUI extends JFrame {
 
+	private static final long serialVersionUID = 1L;
 	private final Client client;
 	private final int WIDTH = 800;
 	private final int HEIGHT = 600;
@@ -62,8 +57,6 @@ public class ClientGUI extends JFrame {
 	private JButton newBoardButton;
 	private JButton startButton;
 	
-    //the GUI for this client
-    private JFrame frame;
     private JLabel currentUserBoard;
     
     private Canvas canvas;

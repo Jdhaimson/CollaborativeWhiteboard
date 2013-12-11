@@ -105,6 +105,8 @@ public class ClientReceiveProtocol implements Runnable {
             } catch (Exception e) {
             	e.printStackTrace();
             }
+        } else {
+        	System.out.println("Invalid response");
         }
    
     }
