@@ -50,13 +50,13 @@ public class CommandTest {
     public void invokeCommandTest() {
         try {
             Client clientInvoked = new Client("localhost", 4444);
-            clientInvoked.setupCanvas();
+            clientInvoked.getClientGUI().setupCanvas();
             lineSegmentObject.invokeCommand(clientInvoked.getCanvas());
             Client clientDrawn = new Client("localhost", 4444);
-            clientDrawn.setupCanvas();
+            clientDrawn.getClientGUI().setupCanvas();
             clientDrawn.getCanvas().drawLineSegment(50, 50, 60, 60, 0, 10);
-            BufferedImage imageInvoked = clientInvoked.getCanvas().getDrawingBuffer();
-            BufferedImage imageDrawn = clientDrawn.getCanvas().getDrawingBuffer();
+            BufferedImage imageInvoked = clientInvoked.getDrawingBuffer();
+            BufferedImage imageDrawn = clientDrawn.getDrawingBuffer();
             boolean same = true;
             for (int x = 0; x < imageInvoked.getWidth(); x++) {
                 for (int y = 0; y < imageInvoked.getHeight(); y++) {

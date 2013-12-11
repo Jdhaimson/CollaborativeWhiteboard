@@ -65,58 +65,46 @@ public class ClientReceiveProtocol implements Runnable {
     private void handleRequest(String input) throws IOException, IllegalArgumentException {
         
     	String nameReg = "[a-zA-Z0-9\\.]+";
-    	String regex = "(draw "+nameReg+"( "+nameReg+")+)|(users( "+nameReg+")+)|(exit "+nameReg+")|"
-    	        +"(boards( "+nameReg+")*)|(checkAndAddUser ("+nameReg+" "+nameReg+" (true|false)))|"
-    	        +"(newBoard "+nameReg+" (true|false))|(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	String regex = "(draw "+nameReg+"( "+nameReg+")+)|"
+		    			+ "(users( "+nameReg+")+)|"
+						+ "(exit "+nameReg+")|"
+		    	        +"(boards( "+nameReg+")*)|"
+		        		+ "(checkAndAddUser ("+nameReg+" "+nameReg+" (true|false)))|"
+		    	        +"(newBoard "+nameReg+" (true|false))|"
+		        		+ "(switch "+nameReg+" "+nameReg+")|(testHello)";
+    	
     	System.out.println("input: "+input);
     	// make sure it's a valid input
         if (input.matches(regex)) {
-            String[] tokens = input.split(" ");
-            System.out.println("token 0: "+tokens[0]);
-            if (tokens[0].equals("boards")) {
-            	try {
+            try {
+	        	String[] tokens = input.split(" ");
+	        	
+	            if (tokens[0].equals("boards")) {
 					client.setBoards(client.parseBoardsFromServerResponse(input));
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-            }  else if (tokens[0].equals("newBoard")) {
-                try {
-                    client.parseNewBoardFromServerResponse(input);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (tokens[0].equals("checkAndAddUser")) {
-                try {
-                    client.parseNewUserFromServerResponse(input);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (tokens[0].equals("users")) {
-                try {
-                    if (client.checkForCorrectBoard(input.split(" ")[1])) {
-                        
-                        client.setUsers(client.parseUsersFromServerResponse(input));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (tokens[0].equals("exit")) {
-                try {
-                    client.completeExit();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (tokens[0].equals("draw")) {
-                try {
-                    Command command = new Command(input);
-                    if (command.checkBoardName(client.getCurrentBoardName())) {
-                        client.applyCommand(command);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-            }    
+	            } 
+	            else if (tokens[0].equals("newBoard")) {
+	                client.parseNewBoardFromServerResponse(input);
+	            } 
+	            else if (tokens[0].equals("checkAndAddUser")) {
+	                client.parseNewUserFromServerResponse(input);
+	            } 
+	            else if (tokens[0].equals("users")) {
+	                if (client.checkForCorrectBoard(input.split(" ")[1])) {   
+	                    client.setUsers(client.parseUsersFromServerResponse(input));
+	                }
+	            } 
+	            else if (tokens[0].equals("exit")) {
+	                client.completeExit();
+	            } 
+	            else if (tokens[0].equals("draw")) {
+	                Command command = new Command(input);
+	                if (command.checkBoardName(client.getCurrentBoardName())) {
+	                    client.applyCommand(command);
+	                }
+	            }
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
         }
    
     }
@@ -148,7 +136,6 @@ public class ClientReceiveProtocol implements Runnable {
      */
     public void kill() {
     	isRunning = false;
-    	// TODO: Fix exception thrown on window close
     }
     
 }

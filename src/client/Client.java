@@ -1,12 +1,7 @@
 package client;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,22 +10,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.concurrent.ExecutionException;
-import javax.swing.DefaultListModel;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
 
 import Command.Command;
 
@@ -41,14 +22,11 @@ public class Client {
     private String username;
     //the name of the board currently being drawn upon
     private String currentBoardName;
-    //the board the client has selected and is drawing on
-    private Canvas canvas;
-    //the GUI for this client
-    private JFrame frame;
     //the color the user is currently drawing in
     private Color currentColor = Color.BLACK;
     //the width of the brush the user is currently drawing with
     private float currentWidth = 10;
+    private BufferedImage drawingBuffer;
     
     // used for comm
     private String[] boards = {};
@@ -59,6 +37,7 @@ public class Client {
     private boolean usersUpdated;
     private String[] users = {};
     private boolean exitComplete;
+    private boolean isErasing;
     
     //the socket with which the user connects to the client
     private Socket socket;
@@ -67,9 +46,8 @@ public class Client {
     ClientReceiveProtocol receiveProtocol;
     Thread receiveThread;
     
-    private JDialog dialog;
-    private DefaultListModel<String> boardListModel;
-    private JTextField newBoard;
+    private ClientGUI clientGUI;
+    
     
     public Client(String host, int port) throws UnknownHostException, IOException {
         socket = new Socket(host, port);
@@ -78,108 +56,38 @@ public class Client {
         receiveProtocol = new ClientReceiveProtocol(in, this);
         receiveThread = new Thread(receiveProtocol);
         receiveThread.start();
-        startDialog();
-        
+        clientGUI = new ClientGUI(this);
+        addShutdownHook();
     }
     
-    private void startDialog() {
-        dialog = new JDialog();
-        dialog.setTitle("Welcome to Whiteboard");
-        dialog.setResizable(false);
-        final Container dialogContainer = new Container();
-        GroupLayout layout = new GroupLayout(dialogContainer);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-        dialogContainer.setLayout(layout);
-        
-        ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        
-        SequentialGroup hUsername = layout.createSequentialGroup();
-        final JTextField usernameTextField = new JTextField(10);
-        usernameTextField.setName("username");
-        JLabel usernameLabel = new JLabel("Username:");
-        hUsername.addComponent(usernameLabel).addComponent(usernameTextField);
-        
-        boardListModel = new DefaultListModel<String>();
+    
+    public BufferedImage getDrawingBuffer() {
+    	return drawingBuffer;
+    }
+    
+    public void setDrawingBuffer(BufferedImage newImage) {
+    	drawingBuffer = newImage;
+    }
+    
+    public void setIsErasing(boolean newIsErasing) {
+    	isErasing = newIsErasing;
+    }
+    
+    public boolean isErasing() {
+    	return isErasing;
+    }
 
-        // Get boards from server and add to data model
-        // TODO: Handle case where there are no boards on server
-		try {
-		    getBoards();
-			for (int i=0; i<boards.length;i++) {
-	            boardListModel.addElement(boards[i]);
-	        }
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-        final JList<String> boardList = new JList<String>(boardListModel); //data has type Object[]
-        boardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        boardList.setLayoutOrientation(JList.VERTICAL);
-        boardList.setVisibleRowCount(-1);
-        JScrollPane boardListScroller = new JScrollPane(boardList);
-        boardListScroller.setPreferredSize(new Dimension(100, 150));
-        
-        SequentialGroup hNewBoard = layout.createSequentialGroup();
-        JLabel newBoardLabel = new JLabel("New Board:");
-        newBoard = new JTextField(10);
-        newBoard.setName("newBoard");
-        JButton newBoardButton = new JButton("Add Board");
-        hNewBoard.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
-        
-        JButton startButton = new JButton("Start");
-        
-        hGroup.addGroup(hUsername).addComponent(boardListScroller).addGroup(hNewBoard).addComponent(startButton);
-        
-        ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        SequentialGroup vAll = layout.createSequentialGroup();
-        
-        ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v1.addComponent(usernameLabel).addComponent(usernameTextField);
-        
-        ParallelGroup v2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v2.addComponent(newBoardLabel).addComponent(newBoard).addComponent(newBoardButton);
-        
-        vAll.addGroup(v1).addComponent(boardListScroller).addGroup(v2).addComponent(startButton);
-        
-        vGroup.addGroup(vAll);
-        
-        layout.setHorizontalGroup(hGroup);
-        layout.setVerticalGroup(vGroup);
-        
-        dialog.setContentPane(dialogContainer);
-        dialog.pack();
-        dialog.setVisible(true);
-        
-        startButton.addActionListener(new ActionListener() {
-            public synchronized void actionPerformed(ActionEvent e) {
-                if (usernameTextField.getText().equals("")) {
-                    JOptionPane.showMessageDialog(dialog, "Please enter a username.", "Try again", JOptionPane.ERROR_MESSAGE);
-                } else if (boardList.isSelectionEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Please select a board.", "Try again", JOptionPane.ERROR_MESSAGE);
-                } else
-                    try {
-                        if (createUser(usernameTextField.getText(), boardList.getSelectedValue())) {
-                            dialog.dispose();
-                            setupCanvas();
-                            makeRequest("switch "+username+" "+currentBoardName+" "+currentBoardName);
-                        } else {
-                            JOptionPane.showMessageDialog(dialog, "Sorry, this username is already taken currently.", "Try again", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-            }
-        });
-        
-        newBoardButton.addActionListener(new ActionListener() {
-            public synchronized void actionPerformed(ActionEvent e) {
-                NewBoardWorker worker = new NewBoardWorker(newBoard.getText());
-                worker.execute();
-                
-            }
-        });
-        
+    /**
+     * Confirms exit of client from server
+     */
+    public void completeExit() {
+        exitComplete = true;
+    }
+
+    /**
+     * Adds commands to shutdown in order to shutdown gracefully
+     */
+    public void addShutdownHook() {
         // close socket on exit
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -221,112 +129,6 @@ public class Client {
             }
         });
     }
-    
-    public void completeExit() {
-        exitComplete = true;
-    }
-    
-    class NewBoardWorker extends SwingWorker<Boolean, Object> {
-        
-        private String newBoardName;
-        
-        public NewBoardWorker(String newBoardName) {
-            this.newBoardName = newBoardName;
-        }
-        
-        /**
-         * Called when execute is called on the worker
-         */
-        @Override
-        protected Boolean doInBackground() throws Exception {  
-            return newBoard(newBoardName);
-        }   
-        
-        /**
-         * After doInBackground has gotten its result, display the result in the list (or not)
-         */
-        @Override
-        protected void done() {
-            try {
-                if (get()) {
-                    getBoards();
-                    boardListModel.removeAllElements();
-                    for (int i=0; i<boards.length;i++) {
-                        boardListModel.addElement(boards[i]);
-                    }
-                    newBoard.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (HeadlessException | InterruptedException
-                    | ExecutionException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public void newBoardDialog() {
-        final JDialog newBoardDialog = new JDialog();
-        newBoardDialog.setTitle("Create New Board");
-        newBoardDialog.setResizable(false);
-        final Container newBoardDialogContainer = new Container();
-        GroupLayout layout = new GroupLayout(newBoardDialogContainer);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-        newBoardDialogContainer.setLayout(layout);
-        
-        JLabel newBoardNameLabel = new JLabel("New Board Name:");
-        final JTextField newBoardName = new JTextField(10);
-        JButton newBoardButton = new JButton("Create");
-        
-        ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.CENTER);
-        
-        SequentialGroup hEnter = layout.createSequentialGroup();
-        hEnter.addComponent(newBoardNameLabel).addComponent(newBoardName);
-        
-        hGroup.addGroup(hEnter).addComponent(newBoardButton);
-        
-        ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        SequentialGroup vAll = layout.createSequentialGroup();
-        
-        ParallelGroup v1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
-        v1.addComponent(newBoardNameLabel).addComponent(newBoardName);
-
-        vAll.addGroup(v1).addComponent(newBoardButton);
-        
-        vGroup.addGroup(vAll);
-        
-        layout.setHorizontalGroup(hGroup);
-        layout.setVerticalGroup(vGroup);
-        
-        newBoardDialog.setContentPane(newBoardDialogContainer);
-        newBoardDialog.pack();
-        newBoardDialog.setVisible(true);
-        
-        newBoardButton.addActionListener(new ActionListener() {
-            public synchronized void actionPerformed(ActionEvent e) {
-                String newBoardNameString = newBoardName.getText();
-                if (newBoardNameString.equals("")) {
-                    JOptionPane.showMessageDialog(newBoardDialog, "Please enter a board name.", "Try again", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    try {
-                        boolean successful = newBoard(newBoardNameString);
-                        if (!successful) {
-                            JOptionPane.showMessageDialog(newBoardDialog, "Sorry, this board name is already taken.", "Try again", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            getBoards();
-                            newBoardDialog.dispose();
-                        }
-                     } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
 
     /**
      * Checks with the server to make sure the username hasn't already been taken and if it hasn't, create the user
@@ -365,21 +167,7 @@ public class Client {
         userCheckMade = true;
     }
     
-    public void setupCanvas() {
-        frame = new JFrame("Freehand Canvas");
-        frame.setTitle("Whiteboard");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setResizable(false);
-        makeNewCanvas();
-    }
-    
-    /**
-     * Gives this client a blank, new Canvas
-     */
-    public void makeNewCanvas() {
-        canvas = new Canvas(800, 600, this);
-    }
+
     
     /**
      * Switches the current board to the board with the given name
@@ -391,7 +179,7 @@ public class Client {
         try {
             makeRequest("switch "+username+" "+currentBoardName+" "+newBoardName);
             currentBoardName = newBoardName;
-            canvas.updateCurrentUserBoard();
+            getCanvas().updateCurrentUserBoard();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -399,13 +187,17 @@ public class Client {
     }
     
     public void applyCommand(Command command) {
-        command.invokeCommand(canvas);
+        command.invokeCommand(getCanvas());
     }
     
     public void makeDrawRequest(String command) throws IOException {
         makeRequest("draw "+currentBoardName+" "+command);
     }
 
+    public ClientGUI getClientGUI() {
+    	return clientGUI;
+    }
+    
     /**
      * Checks that the board name hasn't already been taken and if it hasn't,
      * creates a new board on the server and names it with the given name
@@ -455,7 +247,7 @@ public class Client {
      */
     public void commandCanvas(String boardName, Command command) {
         if (command.checkBoardName(boardName)) {
-            command.invokeCommand(canvas);
+            command.invokeCommand(getCanvas());
         }
     }
     
@@ -584,9 +376,6 @@ public class Client {
     	boardsUpdated = true;
     }
     
-   
-    
-    
     public String getCurrentBoardName() {
         return currentBoardName;
     }
@@ -601,7 +390,7 @@ public class Client {
     }
     
     public Canvas getCanvas() {
-        return canvas;
+        return clientGUI.getCanvas();
     }
     
     public String getUsername() {
