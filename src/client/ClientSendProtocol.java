@@ -29,9 +29,7 @@ public class ClientSendProtocol implements Runnable {
      */
     @Override
     public void run() {
-        System.out.println("Make Request: "+message);
 		out.println(message);
-		
     }
 
 }
