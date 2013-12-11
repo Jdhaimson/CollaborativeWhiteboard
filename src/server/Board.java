@@ -81,7 +81,9 @@ public class Board {
     }
     
     public void setUsers(String[] newUsers) {
-        users = Arrays.asList(newUsers);
+        LinkedList<String> usersList = new LinkedList<String>();
+        usersList.addAll(Arrays.asList(newUsers));
+        users = usersList;
     }
 
 }

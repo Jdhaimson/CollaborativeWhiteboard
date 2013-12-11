@@ -3,10 +3,9 @@ package server;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,14 +13,12 @@ import org.junit.Test;
 
 import command.Command;
 
-import client.Client;
 
 public class ServerTest {
     
     /*
      * Testing Strategy: 
      * 
-     * -When a client connects, their socket is added to a list of sockets
      * -New board for a board whose name is unique adds the board and returns true
      * -New board for a board whose name is already taken returns false
      * -Update board adds a command to a board
@@ -40,31 +37,12 @@ public class ServerTest {
         try {
             server = new Server(4444);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return server;
     }
     
 
-    
-    //@Test
-    public void testServe() {
-        try {
-            Server server = makeServer();
-            Client client = new Client("localhost", 4444);
-            List<Socket> clients = server.getClients();
-            Socket clientSocket = client.getSocket();
-            List<Socket> clientSocketAsList = new LinkedList<Socket>();
-            clientSocketAsList.add(clientSocket);
-            assertTrue(clients.equals(clientSocketAsList));
-            server.close();
-            
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
     
     @Test
     public void newBoardTest() throws IOException {
