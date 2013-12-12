@@ -188,9 +188,9 @@ public class ServerProtocol implements Runnable {
         String newLine = System.getProperty("line.separator");
         server.switchBoard(userName, oldBoardName, newBoardName);
         List<Command> commands = server.getCommands(newBoardName);
-    	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName + newLine;
+    	String str =  "switch " + userName + " " + oldBoardName + " " + newBoardName;
     	for (Command command: commands) {
-    	    str += command.toString() + newLine;
+    	    str += newLine+command.toString();
     	}
     	return str;
     }
@@ -215,8 +215,8 @@ public class ServerProtocol implements Runnable {
         String boardName = tokens[1];
         Command command = new Command(tokens);
         server.updateBoard(boardName, command);
-        server.sendCommandToClients(command);
-        return "draw";
+        server.sendCommandToClients(command, socket);
+        return command.toString();
     }
     
     /**

@@ -121,11 +121,7 @@ public class Canvas extends JPanel {
      * @param board
      */
     public void switchBoard(String board) {
-    	client.setDrawingBuffer(new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB));
-        final Graphics2D g = (Graphics2D) client.getDrawingBuffer().getGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0,  0,  getWidth(), getHeight());
-        repaint();
+    	fillWithWhite();
         client.switchBoard(board);
     }
 

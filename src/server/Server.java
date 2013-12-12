@@ -78,15 +78,18 @@ public class Server {
      * 
      * @param Command - command to be sent to all clients 
      */
-    public void sendCommandToClients(Command command) {
+    public void sendCommandToClients(Command command, Socket skip) {
         for (Socket client: clients) {
-            try {
-                if (!client.isClosed()) {
-                    PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-                    out.println(command.toString());
+            if (!skip.equals(client)) {
+                try {
+                    if (!client.isClosed()) {
+                        System.out.println("sending to client");
+                        PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+                        out.println(command.toString());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -150,11 +153,7 @@ public class Server {
        
         StringBuilder boardsString = new StringBuilder("");
         for (String board: boardsArray) {
-            boardsString.append(board + " ");
-        }
-        
-        if(boardsString.length() > 0) {
-            boardsString.deleteCharAt(boardsString.length() - 1);
+            boardsString.append(" "+board);
         }
         
         return boardsString.toString();

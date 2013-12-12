@@ -63,7 +63,6 @@ public class ClientReceiveProtocol implements Runnable {
      * @throws IOException 
      */
     private void handleRequest(String input) throws IOException, IllegalArgumentException {
-        
     	String nameReg = "[a-zA-Z0-9\\.]+";
     	String regex = "(draw "+nameReg+"( "+nameReg+")+)|"
 		    			+ "(users( "+nameReg+")+)|"
@@ -71,7 +70,7 @@ public class ClientReceiveProtocol implements Runnable {
 		    	        +"(boards( "+nameReg+")*)|"
 		        		+ "(checkAndAddUser ("+nameReg+" "+nameReg+" (true|false)))|"
 		    	        +"(newBoard "+nameReg+" (true|false))|"
-		        		+ "(switch "+nameReg+" "+nameReg+")|(testHello)";
+		        		+ "(switch "+nameReg+" "+nameReg+" "+nameReg+")";
     	
     	// make sure it's a valid input
         if (input.matches(regex)) {
