@@ -30,6 +30,7 @@ public class ClientReceiveProtocol implements Runnable {
 		    	// Means connection has closed
 		    }
     	}
+    
     }
 	    
     
@@ -71,7 +72,7 @@ public class ClientReceiveProtocol implements Runnable {
 		    	        +"(boards( "+nameReg+")*)|"
 		        		+ "(checkAndAddUser ("+nameReg+" "+nameReg+" (true|false)))|"
 		    	        +"(newBoard "+nameReg+" (true|false))|"
-		        		+ "(switch "+nameReg+" "+nameReg+")|(testHello)";
+		        		+ "(switch "+nameReg+" "+nameReg+" "+nameReg+")";
     	
     	System.out.println("input: "+input);
     	// make sure it's a valid input

@@ -29,6 +29,7 @@ public class Server {
     private Hashtable<String, Board> boards = new Hashtable<String, Board>();
     private List<Socket> clients = new LinkedList<Socket>();
     private final ServerSocket serverSocket;
+    private boolean running;
     
     /**
      * Create our server on port port
@@ -36,6 +37,7 @@ public class Server {
      * @throws IOException 
      */
     public Server(int port) throws IOException {
+    	running = true;
     	serverSocket = new ServerSocket(port);
     	// Add shutdown hook to close server gracefully
     	addShutDownHook();
@@ -50,17 +52,22 @@ public class Server {
      * @throws IOException if the main server socket is broken
      *   Note: (IOExceptions from individual clients do *not* terminate serve())
      */
-    public void serve() throws IOException {
+    public void serve() {
     	System.out.println("Server serving");
-        while (true) {
-        	
-            // block until a client connects
-            Socket socket = serverSocket.accept();
-            clients.add(socket);
-
-            // create new thread for each connection
-            new Thread(new ServerProtocol(socket, this)).start();
-        }
+        
+		try {
+	        // block until a client connects
+			while (running) {
+				Socket socket = serverSocket.accept();
+	            clients.add(socket);
+	            
+	            // create new thread for each connection
+	            new Thread(new ServerProtocol(socket, this)).start();
+			}    
+		} catch (IOException e) {
+		}
+        
+		System.out.println("Server Shut down");
     }
     
     /**
@@ -223,23 +230,20 @@ public class Server {
      * @throws IOException
      */
     public void shutDown() throws IOException {
+    	running = false;
     	for (Socket client: clients) {
-    		client.close();
+    		if (!client.isClosed()) client.close();
     	}
     	serverSocket.close();
     }
     
     public void addShutDownHook() {
     	// Add shutdown hook to shutdown server gracefully
-        final Thread mainThread = Thread.currentThread();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 try {
 					shutDown();
-					mainThread.join();
 				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
             }
