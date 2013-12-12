@@ -14,6 +14,10 @@ import command.Command;
 import client.Client;
 
 public class ServerProtocolTest {
+    /*
+     * @category no_didit
+     */
+    
     String newLine = System.getProperty("line.separator");
     /**************** New Board Protocol *******************/
     // new basic board

@@ -16,7 +16,9 @@ import server.Server;
 import testResources.Helper;
 public class ClientTest {
 
-	
+	/*
+	 * @category no_didit
+	 */
 	
 	@Test
 	public void testBoardCreation() throws Exception {
