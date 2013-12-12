@@ -42,9 +42,8 @@ public class ServerProtocol implements Runnable {
             e.printStackTrace();
         } finally {
             try {
-				socket.close();
+				if (!socket.isClosed()) socket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
 			}
         }
     }

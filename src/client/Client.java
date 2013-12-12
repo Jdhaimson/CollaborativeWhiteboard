@@ -53,7 +53,14 @@ public class Client {
 
 	private ClientGUI clientGUI;
 
-
+	/**
+	 * Starts a whiteboard client connected to host on the given port.
+	 * 
+	 * @param host
+	 * @param port
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
 	public Client(String host, int port) throws UnknownHostException, IOException {
 		socket = new Socket(host, port);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -61,8 +68,14 @@ public class Client {
 		receiveProtocol = new ClientReceiveProtocol(in, this);
 		receiveThread = new Thread(receiveProtocol);
 		receiveThread.start();
-		clientGUI = new ClientGUI(this);
 		addShutdownHook();
+	}
+	
+	/**
+	 * Starts the client's GUI
+	 */
+	public void startGUI() {
+		clientGUI = new ClientGUI(this);
 	}
 
 
@@ -446,6 +459,30 @@ public class Client {
 	public void completeExit() {
 		exitComplete.setValue(true);
 	}
+	
+	public void kill() {
+		try {
+			// kill receiving thread and wait for it to close out
+			if (username!= null) {
+				try {
+					exitComplete.setValue(false);
+					makeRequest("exit "+username).join();
+					timeout(exitComplete, timeoutLength, "Exiting");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			receiveProtocol.kill();
+
+			if(!socket.isClosed()) {
+				socket.shutdownInput();
+				socket.shutdownOutput();
+				socket.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Adds commands to shutdown sequence in order to close Client gracefully
@@ -492,8 +529,8 @@ public class Client {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					@SuppressWarnings("unused")
 					Client client = new Client("localhost", 4444);
+					client.startGUI();
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
