@@ -12,7 +12,7 @@ import client.Client;
 public class CommandTest {
     
     /*
-     * @category: no_didit
+     * @category no_didit
      * Testing strategy:
      * 
      * -Constructor parses string correctly
