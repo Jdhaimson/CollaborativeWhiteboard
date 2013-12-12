@@ -94,12 +94,14 @@ public class ServerProtocol implements Runnable {
 	 * 
 	 * Sends: 
 	 * 
+	 * New Board = "newBoard boardName boolean"
+	 * Switch Board = "switch username oldBoardName newBoardName command1 command2 command3..."
 	 * Update Users = "users boardName user1 user2 user3..."
 	 * Update Available Boards = "boards board1 board2 board3"
 	 * Draw = "draw boardName command param1 param2 param3"
 	 *      Example: "draw boardName drawLineSegment x1 y1 x2 y2 color width"
 	 * Check and add User = "checkAndAddUser username boardName boolean"
-	 * New Board = "newBoard boardName boolean"
+	 * 
      * 
      * 
      * @param input message from client
@@ -156,6 +158,7 @@ public class ServerProtocol implements Runnable {
         throw new UnsupportedOperationException();
     }
     
+
     /**
      * Boards response
      * @param tokens
@@ -237,5 +240,16 @@ public class ServerProtocol implements Runnable {
     public String users(String[] tokens) {
         String boardName = tokens[1];
         return "users "+boardName+" "+server.getUsers(boardName);
+    }
+    
+    /**
+     * testing purposes for handleRequest()
+     * 
+     * @param input 
+     * @return output from handleRequest(input)
+     * @throws IOException
+     */
+    public String testHandleRequest(String input) throws IOException {
+        return handleRequest(input);
     }
 }

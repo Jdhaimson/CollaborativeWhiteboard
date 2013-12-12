@@ -43,7 +43,6 @@ public class Server {
     	// Add shutdown hook to close server gracefully
     	addShutDownHook();
     }
-    
     /**
      * Run the server, listening for client connections and handling them.
      * Never returns unless an exception is thrown.
@@ -173,19 +172,14 @@ public class Server {
      * @return: whether or not the user entered successfully
      */
     public synchronized boolean checkUser(String username, String boardName) {
-        boolean unique = true;
-
         for (String board : boards.keySet()) {
             if (!boards.get(board).checkUsernameAvailable(username)) {
-                unique = false;
+                return false;
             }
         }
-        
         // If user is unique, add them to board
-        if (unique) {
-            enter(username, boardName);
-        } 
-        return unique;
+        enter(username, boardName);
+        return true;
     }
     
     /**
