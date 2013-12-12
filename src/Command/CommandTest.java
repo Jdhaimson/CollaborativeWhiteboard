@@ -65,7 +65,6 @@ public class CommandTest {
             }
             assertTrue(same);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
