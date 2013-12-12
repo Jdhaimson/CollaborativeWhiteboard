@@ -14,7 +14,7 @@ public class Helper {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	public static Server serverSetup(int port) throws InterruptedException, ExecutionException {
+	public static Server serverSetup(int port) {
 		class RunnableServer implements Runnable{
 			private Server server;
 			public RunnableServer(Server server) {
