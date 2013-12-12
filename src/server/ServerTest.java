@@ -17,6 +17,7 @@ import command.Command;
 public class ServerTest {
     
     /*
+     * @category no_didit
      * Testing Strategy: 
      * 
      * -New board for a board whose name is unique adds the board and returns true

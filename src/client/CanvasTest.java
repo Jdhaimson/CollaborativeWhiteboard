@@ -16,6 +16,7 @@ import org.junit.Test;
 public class CanvasTest {
     
     /*
+     * @category no_didit
      * Testing Strategy:
      * 
      * -paintComponent (called on repaint)

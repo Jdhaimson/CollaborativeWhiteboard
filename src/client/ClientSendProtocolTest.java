@@ -14,6 +14,7 @@ import org.junit.Test;
 
 public class ClientSendProtocolTest {
 	/*
+	 * @category no_didit
 	 * Testing strategy:
 	 * - Test that we can receive a message sent out over the the send protocol
 	 *   without interruption
