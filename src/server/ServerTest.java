@@ -97,7 +97,7 @@ public class ServerTest {
         Command command = new Command("draw board1 drawLineSegment 50 50 60 60 0 10.0".split(" "));
         server.updateBoard("board1", command);
         server.newBoard("board2");
-        server.getBoard("board2").setUsers(new String[] {"jessica"});
+        server.getBoard("board1").setUsers(new String[] {"jessica"});
         List<Command> commandList = new LinkedList<Command>();
         commandList.add(command);
         assertTrue(Arrays.equals(server.getBoard("board1").getUsers(), new String[] {"jessica"}));
@@ -137,7 +137,7 @@ public class ServerTest {
         Server server = makeServer();
         assertTrue(server.getBoards().equals(""));
         server.newBoard("board1");
-        assertTrue(server.getBoards().equals("board1"));
+        assertTrue(server.getBoards().equals(" board1"));
         server.newBoard("board2");
         server.newBoard("board3");
         ArrayList<String> boardList = new ArrayList<String>();

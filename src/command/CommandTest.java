@@ -27,9 +27,9 @@ public class CommandTest {
     
     @Test
     public void testConstructor() {
-        Command noArgumentsCorrect = new Command("drawNothing", "board1", new String[0]);
+        Command noArgumentsCorrect = new Command("board1", "drawNothing", new String[0]);
         assertTrue(noArgumentsObject.equals(noArgumentsCorrect));
-        Command lineSegmentCorrect = new Command("drawLineSegment", "board2", new String[]{"50", "50", "60", "60", "0", "10"});
+        Command lineSegmentCorrect = new Command("board2", "drawLineSegment", new String[]{"50", "50", "60", "60", "0", "10"});
         assertTrue(lineSegmentObject.equals(lineSegmentCorrect));
     }
     
