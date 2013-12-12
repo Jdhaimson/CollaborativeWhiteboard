@@ -46,7 +46,7 @@ public class Canvas extends JPanel {
 	/**
 	 * Make the drawing buffer and draw some starting content for it.
 	 */
-	private void makeDrawingBuffer() {
+	protected void makeDrawingBuffer() {
 		client.setDrawingBuffer(new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB));
 		fillWithWhite();
 	}
@@ -54,7 +54,7 @@ public class Canvas extends JPanel {
 	/**
 	 * Make the drawing buffer entirely white.
 	 */
-	private void fillWithWhite() {
+	protected void fillWithWhite() {
 		final Graphics2D g = (Graphics2D) client.getDrawingBuffer().getGraphics();
 
 		g.setColor(Color.WHITE);
@@ -69,7 +69,7 @@ public class Canvas extends JPanel {
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in
 	 * pixels relative to the upper-left corner of the drawing buffer.
 	 */
-	public void drawLineSegmentAndCall(int x1, int y1, int x2, int y2, int color, float width) {
+	protected void drawLineSegmentAndCall(int x1, int y1, int x2, int y2, int color, float width) {
 		drawLineSegment(x1, y1, x2, y2, color, width);
 		try {
 			client.makeDrawRequest("drawLineSegment "+x1+" "+y1+" "+x2+" "+y2+" "+(color+16777216)+" "+width);
@@ -123,6 +123,10 @@ public class Canvas extends JPanel {
     public void switchBoard(String board) {
     	fillWithWhite();
         client.switchBoard(board);
+    }
+    
+    public EventListener getCurrentListener() {
+        return currentListener;
     }
 
 }
