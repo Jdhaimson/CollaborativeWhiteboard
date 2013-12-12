@@ -30,7 +30,6 @@ public class ClientSendProtocol implements Runnable {
     @Override
     public void run() {
 		out.println(message);
-		
     }
 
 }
