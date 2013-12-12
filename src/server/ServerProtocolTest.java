@@ -13,10 +13,46 @@ import org.junit.Test;
 import Command.Command;
 import client.Client;
 
+/**
+ * Testing Strategy:
+ *  New Board:
+ *      make new board
+ *      make multiple boards
+ *      make error new board
+ *      make error multiple boards
+ *      make multiple correct and error boards
+ *  Switch Board:
+ *      basic switch board
+ *      switch board with few Commands
+ *      switch board with 1,000 Commands
+ *  Check Boards:
+ *      Check no boards
+ *      Check one board
+ *      Check one hundred boards
+ *  Get Users:
+ *      No Users
+ *      One user
+ *      Multiple Users
+ *  Check and Add user:
+ *      Add one user
+ *      Add multiple users
+ *      Add same user
+ *      Add same user multiple times
+ *      Add same user different boards
+ *      Add different users to multiple boards
+ *  Exit:
+ *      Basic Exit
+ *      Multiple Users Exit
+ *      Multiple Users, multiple Boards Exit
+ *  Draw:
+ *      Basic Draw
+ *      Multiple Draw Commands
+ *  Invalid Input
+ */
 public class ServerProtocolTest {
     String newLine = System.getProperty("line.separator");
 
-    /**************** New Board Protocol *******************/
+    /**************** New Board *************************/
     // new basic board
     @Test
     public void makeNewBoardBasicTest() throws IllegalArgumentException,

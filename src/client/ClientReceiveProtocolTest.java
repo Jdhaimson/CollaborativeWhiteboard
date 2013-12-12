@@ -13,6 +13,31 @@ import org.junit.Test;
 
 import server.Server;
 
+/**
+ * Testing Strategy:
+ * 
+ *  Update Users:
+ *      No Users
+ *      Multiple Users
+ *      One Hundred Users
+ *  Update Available Boards:
+ *      No Boards
+ *      Two Boards
+ *      Multiple Boards
+ *      Way more Boards
+ *  Check and Add User
+ *      Add one User - true
+ *      Add one User - false
+ *      Add combinations of true and false users
+ *  New Board:
+ *      Add one new board
+ *      Add two new boards
+ *      Add two false boards
+ *      Add one true, one false board
+ *      Add multiple true and false boards
+ *  Exit:
+ *      Test exit connection
+ */
 public class ClientReceiveProtocolTest {
     
     /******************** Update Users  *****************/
@@ -210,17 +235,7 @@ public class ClientReceiveProtocolTest {
         
         Arrays.equals(client.getBoards(), boards.toArray());
     }
-    /******************** Draw  ************************/
-    @Test 
-    // basic draw
-    public void basicDrawTest() {
-        
-    }
-    @Test 
-    // two draw 
-    public void twoDrawTest() {
-        
-    }
+
     /******************** Check and Add User ***********/
     @Test
     // add one true user
@@ -489,6 +504,7 @@ public class ClientReceiveProtocolTest {
     /****************************** Exit *******************************/
     
     @Test
+    // exit program
     public void basicExit() throws Exception{
         Thread t1 = new Thread(new Runnable() {
             public void run() {
