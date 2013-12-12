@@ -2,16 +2,10 @@ package server;
 
 import static org.junit.Assert.*;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 import org.junit.Test;
 
 import command.Command;
-import client.Client;
 
 /**
  * Testing Strategy:
