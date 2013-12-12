@@ -93,7 +93,7 @@ public class ClientReceiveProtocol implements Runnable {
 	            //is the set of users is for the correct board
 	            //parse the users from the response and set them to the list of users
 	            else if (tokens[0].equals("users")) {
-	                if (client.checkForCorrectBoard(input.split(" ")[1])) {   
+	                if (client.checkForCorrectBoard(tokens[1])) {   
 	                    client.setUsers(client.parseUsersFromServerResponse(input));
 	                }
 	            } 
@@ -123,6 +123,16 @@ public class ClientReceiveProtocol implements Runnable {
      */
     public void kill() {
     	isRunning = false;
+    }
+    
+    /**
+     * For testing purposes. Calls handleRequest on input
+     * @param input
+     * @throws IOException 
+     * @throws IllegalArgumentException 
+     */
+    public void testHandleRequest(String input) throws IllegalArgumentException, IOException {
+        handleRequest(input);
     }
     
 }

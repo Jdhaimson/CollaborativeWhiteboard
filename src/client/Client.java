@@ -10,11 +10,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Hashtable;
+
 import javax.swing.SwingUtilities;
 
 import command.Command;
 
 public class Client {
+
 
 	//the username the client will go by in this session
 	//must be unique; no other clients can have this user name
@@ -497,14 +499,37 @@ public class Client {
 		});
 	}
 
-	/**
-	 * Main program. Make a Client at localhost on port 4444.
-	 */
-	public static void main(String[] args) {
-		// set up the UI (on the event-handling thread)
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
+    /**
+     * For testing purposes. Gets the ClientReceiveProtocol
+     * @param args
+     */
+    public ClientReceiveProtocol getClientReceiveProtocol() { 
+        return receiveProtocol;
+    }
+    
+    /**
+     * Testing purposes for new board method
+     * @return
+     */
+    public Hashtable<String, Tracker> getBoardSuccessful() {
+        return newBoardSuccessful;
+    }
+    
+    /**
+     * Get exitComplete
+     */
+    public Tracker getExitComplete() {
+        return exitComplete;
+    }
+    
+    /*
+     * Main program. Make a window containing a Canvas.
+     */
+    public static void main(String[] args) {
+        // set up the UI (on the event-handling thread)
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
 					Client client = new Client("localhost", 4444);
 					client.startGUI();
 				} catch (UnknownHostException e) {
