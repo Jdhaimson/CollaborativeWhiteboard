@@ -41,10 +41,10 @@ public class Client {
     
     //the socket with which the user connects to the client
     private Socket socket;
-    BufferedReader in;
-    PrintWriter out;
-    ClientReceiveProtocol receiveProtocol;
-    Thread receiveThread;
+    private BufferedReader in;
+    private PrintWriter out;
+    private ClientReceiveProtocol receiveProtocol;
+    private Thread receiveThread;
     
     private ClientGUI clientGUI;
     
@@ -166,8 +166,6 @@ public class Client {
         }
         userCheckMade = true;
     }
-    
-
     
     /**
      * Switches the current board to the board with the given name
@@ -399,6 +397,29 @@ public class Client {
     
     public boolean checkForCorrectBoard(String boardName) {
         return boardName.equals(currentBoardName);
+    }
+    
+    /**
+     * For testing purposes. Gets the ClientReceiveProtocol
+     * @param args
+     */
+    public ClientReceiveProtocol getClientReceiveProtocol() { 
+        return receiveProtocol;
+    }
+    
+    /**
+     * Testing purposes for new board method
+     * @return
+     */
+    public Hashtable<String, Boolean> getBoardSuccessful() {
+        return newBoardSuccessful;
+    }
+    
+    /**
+     * Get exitComplete
+     */
+    public boolean getExitComplete() {
+        return exitComplete;
     }
     
     /*
