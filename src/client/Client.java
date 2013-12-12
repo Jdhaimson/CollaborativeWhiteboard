@@ -498,28 +498,6 @@ public class Client {
 			}
 		});
 	}
-	
-	public void kill() {
-	    try {
-            // kill receiving thread and wait for it to close out
-            if (username!= null) {
-                try {
-                    exitComplete.setValue(false);
-                    makeRequest("exit "+username).join();
-                    timeout(exitComplete, timeoutLength, "Exiting");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            receiveProtocol.kill();
-            socket.shutdownInput();
-            socket.shutdownOutput();
-
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	}
 
 	/**
 	 * Main program. Make a Client at localhost on port 4444.
