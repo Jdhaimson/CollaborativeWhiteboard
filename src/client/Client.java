@@ -204,8 +204,6 @@ public class Client {
 		if (!(nbm == null)) { nbm.setValue(true); }
 	}
 
-
-
 	/**
 	 * Gets the users for the current board from the server and sets them
 	 */

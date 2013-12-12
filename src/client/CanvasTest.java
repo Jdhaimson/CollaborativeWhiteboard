@@ -64,6 +64,7 @@ public class CanvasTest {
                 if (madeImage.getRGB(x, y) != client.getDrawingBuffer().getRGB(x, y) ) same = false;
              }
         }
+        
         client.kill();
         assertTrue(same);
         server.shutDown();
